@@ -1,3 +1,4 @@
+import Link from "next/link";
 export default function Home() {
   return (
     <main className="min-h-screen bg-gray-100">
@@ -38,34 +39,32 @@ export default function Home() {
               • Directorate of Programmes
             </div>
 
-            <div className="ml-4">
-              • Directorate of Communications
-            </div>
-
-            <div className="ml-4">
-              • Monitoring, Evaluation & Learning
-            </div>
-
-
             <div className="mt-5 font-semibold">
-              Programmes
-            </div>
+  Programmes
+</div>
 
-            <div className="ml-4">
-              • Civic Leadership & Democratic Governance
-            </div>
+<Link 
+  href="/programmes"
+  className="ml-4 block hover:text-green-700"
+>
+  • Programme Portfolio
+</Link>
 
-            <div className="ml-4">
-              • Mental Resilience Programme
-            </div>
+<div className="ml-4">
+  • Civic Leadership & Democratic Governance
+</div>
 
-            <div className="ml-4">
-              • Youth Development
-            </div>
+<div className="ml-4">
+  • Mental Resilience Programme
+</div>
 
-            <div className="ml-4">
-              • Community Engagement
-            </div>
+<div className="ml-4">
+  • Youth Development
+</div>
+
+<div className="ml-4">
+  • Community Engagement
+</div>
 
 
             <div className="mt-5">
