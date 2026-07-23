@@ -4,7 +4,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 
@@ -63,10 +62,7 @@ model Programme {
   status          String
 
   directorateId   String
-  directorate     Directorate @relation(
-    fields: [directorateId],
-    references: [id]
-  )
+  directorate     Directorate @relation(fields: [directorateId],references: [id])
 
   projects        Project[]
   indicators      Indicator[]
@@ -94,10 +90,7 @@ model Project {
 
   programmeId     String
 
-  programme       Programme @relation(
-    fields: [programmeId],
-    references: [id]
-  )
+  programme       Programme @relation(fields: [programmeId],references: [id])
 
   activities      Activity[]
 
@@ -125,10 +118,7 @@ model Activity {
 
   projectId       String
 
-  project         Project @relation(
-    fields: [projectId],
-    references: [id]
-  )
+  project         Project @relation(fields: [projectId],references: [id])
 
 
   createdAt       DateTime @default(now())
@@ -154,10 +144,7 @@ model Indicator {
 
   programmeId     String
 
-  programme       Programme @relation(
-    fields: [programmeId],
-    references: [id]
-  )
+  programme       Programme @relation(fields: [programmeId],references: [id])
 
   createdAt       DateTime @default(now())
 
