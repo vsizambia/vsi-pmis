@@ -1,34 +1,70 @@
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 
 export async function GET() {
 
-  const directorates = await prisma.directorate.findMany({
-    include:{
-      programmes:true
-    }
-  });
+  try {
 
-  return NextResponse.json(directorates);
+    const directorates = await prisma.directorate.findMany({
+      orderBy:{
+        createdAt:"desc"
+      }
+    });
+
+
+    return Response.json(directorates);
+
+
+  } catch(error){
+
+    console.error(error);
+
+    return Response.json(
+      {
+        error:"Failed to fetch directorates"
+      },
+      {
+        status:500
+      }
+    );
+
+  }
 
 }
 
 
 export async function POST(request: Request){
 
-  const body = await request.json();
+  try{
+
+    const body = await request.json();
 
 
-  const directorate = await prisma.directorate.create({
+    const directorate = await prisma.directorate.create({
 
-    data:{
-      name: body.name,
-      description: body.description
-    }
+      data:{
+        name:body.name,
+        description:body.description
+      }
 
-  });
+    });
 
 
-  return NextResponse.json(directorate);
+    return Response.json(directorate);
+
+
+  }catch(error){
+
+    console.error(error);
+
+    return Response.json(
+      {
+        error:"Failed to create directorate"
+      },
+      {
+        status:500
+      }
+    );
+
+  }
 
 }

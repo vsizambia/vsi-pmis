@@ -1,133 +1,99 @@
-export default function Programmes() {
-
-  const programmes = [
-    {
-      name: "Civic Leadership and Democratic Governance Programme",
-      directorate: "Directorate of Programmes",
-      manager: "Programme Manager",
-      status: "Active",
-      period: "2026 - 2029",
-    },
-    {
-      name: "Mental Resilience and Wellbeing Programme",
-      directorate: "Directorate of Programmes",
-      manager: "Programme Manager",
-      status: "Active",
-      period: "2026 - 2029",
-    },
-    {
-      name: "Youth Development Programme",
-      directorate: "Directorate of Programmes",
-      manager: "Programme Manager",
-      status: "Planning",
-      period: "2026 - 2029",
-    },
-    {
-      name: "Community Engagement Programme",
-      directorate: "Directorate of Programmes",
-      manager: "Programme Manager",
-      status: "Planning",
-      period: "2026 - 2029",
-    },
-    {
-      name: "Communications and Advocacy Programme",
-      directorate: "Directorate of Communications",
-      manager: "Programme Manager",
-      status: "Active",
-      period: "2026 - 2029",
-    },
-  ];
+"use client";
 
 
-  return (
-    <main className="min-h-screen bg-gray-100 p-8">
-
-      <header className="bg-green-800 text-white p-6 rounded-lg shadow">
-
-        <h1 className="text-3xl font-bold">
-          Programme Portfolio
-        </h1>
-
-        <p className="mt-2">
-          VSI Programme Management Information System
-        </p>
-
-      </header>
+import {useEffect,useState} from "react";
+import Link from "next/link";
 
 
-      <section className="mt-8 bg-white rounded-lg shadow p-6">
-
-        <h2 className="text-xl font-bold mb-5">
-          Registered Programmes
-        </h2>
+export default function Programmes(){
 
 
-        <table className="w-full">
-
-          <thead>
-            <tr className="border-b text-left">
-
-              <th className="p-3">
-                Programme
-              </th>
-
-              <th className="p-3">
-                Directorate
-              </th>
-
-              <th className="p-3">
-                Programme Manager
-              </th>
-
-              <th className="p-3">
-                Status
-              </th>
-
-              <th className="p-3">
-                Period
-              </th>
-
-            </tr>
-          </thead>
+const [programmes,setProgrammes]=useState<any[]>([]);
 
 
-          <tbody>
 
-            {programmes.map((programme, index) => (
+useEffect(()=>{
 
-              <tr key={index} className="border-b">
-
-                <td className="p-3 font-medium">
-                  {programme.name}
-                </td>
-
-                <td className="p-3">
-                  {programme.directorate}
-                </td>
-
-                <td className="p-3">
-                  {programme.manager}
-                </td>
-
-                <td className="p-3 text-green-700">
-                  {programme.status}
-                </td>
-
-                <td className="p-3">
-                  {programme.period}
-                </td>
-
-              </tr>
-
-            ))}
-
-          </tbody>
-
-        </table>
-
-      </section>
+fetch("/api/programmes")
+.then(res=>res.json())
+.then(data=>setProgrammes(data));
 
 
-    </main>
-  );
+},[]);
+
+
+
+return (
+
+<main className="p-8">
+
+
+<div className="flex justify-between mb-8">
+
+
+<h1 className="text-3xl font-bold">
+Programmes
+</h1>
+
+
+<Link
+href="/programmes/register"
+className="bg-black text-white px-5 py-3 rounded"
+>
+Register Programme
+</Link>
+
+
+</div>
+
+
+
+<div className="grid gap-5">
+
+
+{programmes.map(programme=>(
+
+<div
+key={programme.id}
+className="border rounded-lg p-5 bg-white"
+>
+
+
+<h2 className="text-xl font-semibold">
+{programme.name}
+</h2>
+
+
+<p className="text-gray-600 mt-2">
+{programme.description}
+</p>
+
+
+<p className="mt-3 text-sm">
+Directorate:
+<strong>
+{programme.directorate.name}
+</strong>
+</p>
+
+
+<p className="text-sm">
+Period:
+{programme.startYear} - {programme.endYear}
+</p>
+
+
+</div>
+
+
+))}
+
+
+</div>
+
+
+</main>
+
+)
+
 }

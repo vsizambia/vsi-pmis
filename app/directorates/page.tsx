@@ -1,61 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-
+import Link from "next/link";
 
 export default function Directorates(){
 
-const [directorates,setDirectorates]=useState<any[]>([]);
-
-const [form,setForm]=useState({
-name:"",
-description:""
-});
-
-
-async function loadDirectorates(){
-
-const response =
-await fetch("/api/directorates");
-
-const data =
-await response.json();
-
-setDirectorates(data);
-
-}
-
-
-async function saveDirectorate(e:any){
-
-e.preventDefault();
-
-
-await fetch("/api/directorates",{
-
-method:"POST",
-
-body:JSON.stringify(form)
-
-});
-
-
-setForm({
-name:"",
-description:""
-});
-
-
-loadDirectorates();
-
-}
+const [directorates,setDirectorates] = useState<any[]>([]);
 
 
 useEffect(()=>{
 
-loadDirectorates();
+fetch("/api/directorates")
+.then(res=>res.json())
+.then(data=>setDirectorates(data));
 
 },[]);
 
@@ -65,139 +22,60 @@ return (
 
 <main className="p-8">
 
+<div className="flex justify-between items-center mb-8">
 
-<h1 className="text-3xl font-bold mb-6">
-Directorate Management
+<h1 className="text-3xl font-bold">
+Directorates
 </h1>
 
 
-<Card className="mb-8">
-
-<CardHeader>
-
-<CardTitle>
-Register Directorate
-</CardTitle>
-
-</CardHeader>
-
-
-<CardContent>
-
-
-<form
-onSubmit={saveDirectorate}
-className="space-y-4"
+<Link
+href="/directorates/register"
+className="bg-black text-white px-5 py-3 rounded"
 >
+Register Directorate
+</Link>
 
-
-<input
-
-className="border rounded p-3 w-full"
-
-placeholder="Directorate Name"
-
-value={form.name}
-
-onChange={(e)=>
-setForm({
-...form,
-name:e.target.value
-})
-}
-
-/>
+</div>
 
 
 
-<textarea
-
-className="border rounded p-3 w-full"
-
-placeholder="Description"
-
-value={form.description}
-
-onChange={(e)=>
-setForm({
-...form,
-description:e.target.value
-})
-}
-
-/>
+<div className="grid gap-5">
 
 
-
-<Button>
-Save Directorate
-</Button>
-
-
-</form>
-
-
-</CardContent>
-
-</Card>
-
-
-
-<Card>
-
-<CardHeader>
-
-<CardTitle>
-Registered Directorates
-</CardTitle>
-
-</CardHeader>
-
-
-<CardContent>
-
-
-<div className="space-y-3">
-
-
-{
-directorates.map((item)=>(
+{directorates.map((item)=>(
 
 <div
 key={item.id}
-className="border rounded p-4"
+className="border rounded-lg p-5 bg-white"
 >
 
-<h3 className="font-bold">
+<h2 className="text-xl font-semibold">
 {item.name}
-</h3>
+</h2>
 
-<p>
+
+<p className="text-gray-600 mt-2">
 {item.description}
 </p>
 
-<p className="text-sm text-gray-500 mt-2">
-Programmes:
-{item.programmes.length}
+
+<p className="text-sm mt-3 text-gray-500">
+Created:
+{new Date(item.createdAt).toLocaleDateString()}
 </p>
 
 
 </div>
 
-))
-}
+))}
 
 
 </div>
-
-
-</CardContent>
-
-</Card>
 
 
 </main>
 
-);
+)
 
 }

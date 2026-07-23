@@ -1,33 +1,90 @@
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-
-export async function POST(request: Request) {
-
-  try {
-
-    const body = await request.json();
-
-    const programme = await prisma.programme.create({
-      data: {
-        name: body.name,
-        description: body.description,
-        startYear: Number(body.startYear),
-        endYear: Number(body.endYear),
-        status: "Planning",
-        directorateId: body.directorateId,
-      },
-    });
+import prisma from "@/lib/prisma";
 
 
-    return NextResponse.json(programme);
+export async function GET(){
 
-  } catch (error) {
+try{
 
-    return NextResponse.json(
-      { error: "Failed to create programme" },
-      { status: 500 }
-    );
+const programmes = await prisma.programme.findMany({
 
-  }
+include:{
+directorate:true
+},
+
+orderBy:{
+createdAt:"desc"
+}
+
+});
+
+
+return Response.json(programmes);
+
+
+}catch(error){
+
+console.error(error);
+
+return Response.json(
+{
+error:"Failed to fetch programmes"
+},
+{
+status:500
+}
+);
+
+}
+
+}
+
+
+
+export async function POST(request:Request){
+
+try{
+
+
+const body = await request.json();
+
+
+const programme = await prisma.programme.create({
+
+data:{
+
+name:body.name,
+
+description:body.description,
+
+startYear:Number(body.startYear),
+
+endYear:Number(body.endYear),
+
+directorateId:body.directorateId
+
+}
+
+});
+
+
+return Response.json(programme);
+
+
+}catch(error){
+
+console.error(error);
+
+
+return Response.json(
+{
+error:"Failed to create programme"
+},
+{
+status:500
+}
+);
+
+
+}
 
 }

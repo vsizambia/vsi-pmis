@@ -6,30 +6,40 @@ import { Button } from "@/components/ui/button";
 export default function RegisterProgramme() {
 
   const [form, setForm] = useState({
-    name:"",
-    description:"",
-    startYear:"2026",
-    endYear:"2029",
-    directorateId:""
+    name: "",
+    description: "",
+    startYear: "2026",
+    endYear: "2029",
+    directorateId: ""
   });
 
+  const [message, setMessage] = useState("");
 
-  async function submitProgramme(e:any){
-
+  async function submitProgramme(e: any) {
     e.preventDefault();
 
-
-    await fetch("/api/programmes",{
-
-      method:"POST",
-
-      body:JSON.stringify(form)
-
+    const response = await fetch("/api/programmes", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(form)
     });
 
+    if (response.ok) {
+      setMessage("Programme registered successfully");
 
-    alert("Programme registered successfully");
+      setForm({
+        name: "",
+        description: "",
+        startYear: "2026",
+        endYear: "2029",
+        directorateId: ""
+      });
 
+    } else {
+      setMessage("Failed to register programme");
+    }
   }
 
 
@@ -44,14 +54,18 @@ export default function RegisterProgramme() {
 
       <form
         onSubmit={submitProgramme}
-        className="space-y-5"
+        className="space-y-5 max-w-xl"
       >
 
         <input
           className="border p-3 w-full rounded"
           placeholder="Programme Name"
+          value={form.name}
           onChange={(e)=>
-            setForm({...form,name:e.target.value})
+            setForm({
+              ...form,
+              name:e.target.value
+            })
           }
         />
 
@@ -59,22 +73,26 @@ export default function RegisterProgramme() {
         <textarea
           className="border p-3 w-full rounded"
           placeholder="Description"
+          value={form.description}
           onChange={(e)=>
-            setForm({...form,description:e.target.value})
+            setForm({
+              ...form,
+              description:e.target.value
+            })
           }
         />
 
 
         <input
           className="border p-3 w-full rounded"
-          value="2026"
+          value={form.startYear}
           readOnly
         />
 
 
         <input
           className="border p-3 w-full rounded"
-          value="2029"
+          value={form.endYear}
           readOnly
         />
 
@@ -82,21 +100,31 @@ export default function RegisterProgramme() {
         <input
           className="border p-3 w-full rounded"
           placeholder="Directorate ID"
+          value={form.directorateId}
           onChange={(e)=>
-            setForm({...form,directorateId:e.target.value})
+            setForm({
+              ...form,
+              directorateId:e.target.value
+            })
           }
         />
 
 
-        <Button>
+        <Button type="submit">
           Save Programme
         </Button>
 
 
       </form>
 
+
+      {message && (
+        <p className="mt-5">
+          {message}
+        </p>
+      )}
+
     </main>
 
   );
-
 }
