@@ -1,0 +1,164 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+// =========================
+// USER MANAGEMENT
+// =========================
+
+model User {
+  id            String   @id @default(cuid())
+  name          String
+  email         String   @unique
+  password      String
+  roleId        String
+  role          Role     @relation(fields: [roleId], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+
+model Role {
+  id            String   @id @default(cuid())
+  name          String   @unique
+  users         User[]
+}
+
+
+// =========================
+// ORGANIZATIONAL STRUCTURE
+// =========================
+
+model Directorate {
+  id            String @id @default(cuid())
+  name          String
+  description   String?
+
+  programmes    Programme[]
+
+  createdAt     DateTime @default(now())
+}
+
+
+// =========================
+// PROGRAMME MANAGEMENT
+// =========================
+
+model Programme {
+
+  id              String @id @default(cuid())
+
+  name            String
+  description     String?
+
+  startYear       Int
+  endYear         Int
+
+  status          String
+
+  directorateId   String
+  directorate     Directorate @relation(
+    fields: [directorateId],
+    references: [id]
+  )
+
+  projects        Project[]
+  indicators      Indicator[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+
+// =========================
+// PROJECT MANAGEMENT
+// =========================
+
+model Project {
+
+  id              String @id @default(cuid())
+
+  name            String
+  description     String?
+
+  startDate       DateTime
+  endDate         DateTime
+
+  status          String
+
+  programmeId     String
+
+  programme       Programme @relation(
+    fields: [programmeId],
+    references: [id]
+  )
+
+  activities      Activity[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+}
+
+
+// =========================
+// ACTIVITIES
+// =========================
+
+model Activity {
+
+  id              String @id @default(cuid())
+
+  name            String
+
+  description     String?
+
+  activityDate    DateTime
+
+  location        String?
+
+  projectId       String
+
+  project         Project @relation(
+    fields: [projectId],
+    references: [id]
+  )
+
+
+  createdAt       DateTime @default(now())
+
+}
+
+
+// =========================
+// MONITORING & EVALUATION
+// =========================
+
+model Indicator {
+
+  id              String @id @default(cuid())
+
+  name            String
+
+  baseline        String?
+
+  target          String?
+
+  achieved        String?
+
+  programmeId     String
+
+  programme       Programme @relation(
+    fields: [programmeId],
+    references: [id]
+  )
+
+  createdAt       DateTime @default(now())
+
+}
