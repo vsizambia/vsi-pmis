@@ -1,99 +1,86 @@
 "use client";
 
-
-import {useEffect,useState} from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
+type Programme = {
+  id: string;
+  name: string;
+  description: string | null;
+  startYear: number;
+  endYear: number;
+};
 
-export default function Programmes(){
+export default function ProgrammesPage() {
+  const [programmes, setProgrammes] = useState<Programme[]>([]);
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    async function fetchProgrammes() {
+      const response = await fetch("/api/programmes");
+      const data = await response.json();
 
-const [programmes,setProgrammes]=useState<any[]>([]);
+      setProgrammes(data);
+      setLoading(false);
+    }
 
+    fetchProgrammes();
+  }, []);
 
+  return (
+    <main className="p-8">
 
-useEffect(()=>{
+      <div className="flex justify-between items-center mb-6">
 
-fetch("/api/programmes")
-.then(res=>res.json())
-.then(data=>setProgrammes(data));
+        <h1 className="text-3xl font-bold">
+          Programmes
+        </h1>
 
+        <Link
+          href="/programmes/register"
+          className="bg-green-600 text-white px-5 py-2 rounded"
+        >
+          Register Programme
+        </Link>
 
-},[]);
-
-
-
-return (
-
-<main className="p-8">
-
-
-<div className="flex justify-between mb-8">
-
-
-<h1 className="text-3xl font-bold">
-Programmes
-</h1>
-
-
-<Link
-href="/programmes/register"
-className="bg-black text-white px-5 py-3 rounded"
->
-Register Programme
-</Link>
-
-
-</div>
-
-
-
-<div className="grid gap-5">
+      </div>
 
 
-{programmes.map(programme=>(
+      {loading ? (
+        <p>
+          Loading programmes...
+        </p>
+      ) : (
 
-<div
-key={programme.id}
-className="border rounded-lg p-5 bg-white"
->
+        <div className="space-y-4">
 
+          {programmes.map((programme) => (
 
-<h2 className="text-xl font-semibold">
-{programme.name}
-</h2>
+            <div
+              key={programme.id}
+              className="border p-5 rounded"
+            >
 
+              <h2 className="text-xl font-semibold">
+                {programme.name}
+              </h2>
 
-<p className="text-gray-600 mt-2">
-{programme.description}
-</p>
+              <p>
+                {programme.description}
+              </p>
 
+              <p className="text-sm mt-2">
+                Period: {programme.startYear} - {programme.endYear}
+              </p>
 
-<p className="mt-3 text-sm">
-Directorate:
-<strong>
-{programme.directorate.name}
-</strong>
-</p>
+            </div>
 
+          ))}
 
-<p className="text-sm">
-Period:
-{programme.startYear} - {programme.endYear}
-</p>
+        </div>
 
+      )}
 
-</div>
-
-
-))}
-
-
-</div>
-
-
-</main>
-
-)
-
+    </main>
+  );
 }

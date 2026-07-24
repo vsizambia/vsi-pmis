@@ -1,16 +1,16 @@
 "use client";
 
-import {useState} from "react";
+import { FormEvent, useState } from "react";
 
 export default function RegisterDirectorate(){
 
 const [message,setMessage]=useState("");
 
-async function submit(e:any){
+async function submit(e: FormEvent<HTMLFormElement>) {
 
 e.preventDefault();
 
-const form=new FormData(e.target);
+const form = new FormData(e.currentTarget);
 
 const response=await fetch("/api/directorates",{
 method:"POST",

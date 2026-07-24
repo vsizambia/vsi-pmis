@@ -98,7 +98,7 @@ export default function CivicLeadershipProgramme() {
 
         <p>
           The Civic Leadership and Democratic Governance Programme
-          strengthens young people's understanding of citizenship,
+          strengthens young strengthens young people&apos;s understanding of citizenship,
           national values and principles, democratic participation,
           leadership responsibility and community engagement.
         </p>

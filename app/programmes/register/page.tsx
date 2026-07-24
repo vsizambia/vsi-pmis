@@ -1,29 +1,49 @@
 "use client";
 
-import { useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 
-export default function RegisterProgramme() {
+type Directorate = {
+  id: string;
+  name: string;
+};
 
-  const [form, setForm] = useState({
+type ProgrammeForm = {
+  name: string;
+  description: string;
+  startYear: string;
+  endYear: string;
+  directorateId: string;
+};
+
+export default function RegisterProgramme() {
+  const [directorates, setDirectorates] = useState<Directorate[]>([]);
+
+  const [form, setForm] = useState<ProgrammeForm>({
     name: "",
     description: "",
     startYear: "2026",
     endYear: "2029",
-    directorateId: ""
+    directorateId: "",
   });
 
   const [message, setMessage] = useState("");
 
-  async function submitProgramme(e: any) {
+  useEffect(() => {
+    fetch("/api/directorates")
+      .then((res) => res.json())
+      .then((data: Directorate[]) => setDirectorates(data));
+  }, []);
+
+  async function submitProgramme(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     const response = await fetch("/api/programmes", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify(form)
+      body: JSON.stringify(form),
     });
 
     if (response.ok) {
@@ -34,54 +54,46 @@ export default function RegisterProgramme() {
         description: "",
         startYear: "2026",
         endYear: "2029",
-        directorateId: ""
+        directorateId: "",
       });
-
     } else {
       setMessage("Failed to register programme");
     }
   }
 
-
   return (
-
     <main className="p-8">
-
       <h1 className="text-3xl font-bold mb-6">
         Register New Programme
       </h1>
-
 
       <form
         onSubmit={submitProgramme}
         className="space-y-5 max-w-xl"
       >
-
         <input
           className="border p-3 w-full rounded"
           placeholder="Programme Name"
           value={form.name}
-          onChange={(e)=>
+          onChange={(e) =>
             setForm({
               ...form,
-              name:e.target.value
+              name: e.target.value,
             })
           }
         />
-
 
         <textarea
           className="border p-3 w-full rounded"
-          placeholder="Description"
+          placeholder="Programme Description"
           value={form.description}
-          onChange={(e)=>
+          onChange={(e) =>
             setForm({
               ...form,
-              description:e.target.value
+              description: e.target.value,
             })
           }
         />
-
 
         <input
           className="border p-3 w-full rounded"
@@ -89,42 +101,46 @@ export default function RegisterProgramme() {
           readOnly
         />
 
-
         <input
           className="border p-3 w-full rounded"
           value={form.endYear}
           readOnly
         />
 
-
-        <input
+        <select
           className="border p-3 w-full rounded"
-          placeholder="Directorate ID"
           value={form.directorateId}
-          onChange={(e)=>
+          onChange={(e) =>
             setForm({
               ...form,
-              directorateId:e.target.value
+              directorateId: e.target.value,
             })
           }
-        />
+        >
+          <option value="">
+            Select Directorate
+          </option>
 
+          {directorates.map((directorate) => (
+            <option
+              key={directorate.id}
+              value={directorate.id}
+            >
+              {directorate.name}
+            </option>
+          ))}
+        </select>
 
         <Button type="submit">
           Save Programme
         </Button>
-
-
       </form>
-
 
       {message && (
         <p className="mt-5">
           {message}
         </p>
       )}
-
     </main>
-
   );
 }
