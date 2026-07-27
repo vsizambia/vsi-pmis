@@ -1,6 +1,41 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
+
+// GET ALL ACTIVITIES
+export async function GET() {
+  try {
+    const activities = await prisma.activity.findMany({
+      include: {
+        project: {
+          include: {
+            programme: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    return NextResponse.json(activities);
+
+  } catch (error) {
+    console.error("Activity fetch error:", error);
+
+    return NextResponse.json(
+      {
+        message: "Failed to fetch activities",
+      },
+      {
+        status: 500,
+      }
+    );
+  }
+}
+
+
+// CREATE ACTIVITY
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -23,6 +58,7 @@ export async function POST(request: Request) {
     return NextResponse.json(activity, {
       status: 201,
     });
+
   } catch (error) {
     console.error("Activity creation error:", error);
 
@@ -37,6 +73,8 @@ export async function POST(request: Request) {
   }
 }
 
+
+// UPDATE ACTIVITY
 export async function PUT(request: Request) {
   try {
     const body = await request.json();
@@ -59,6 +97,7 @@ export async function PUT(request: Request) {
     });
 
     return NextResponse.json(activity);
+
   } catch (error) {
     console.error("Activity update error:", error);
 

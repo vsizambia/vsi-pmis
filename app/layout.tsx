@@ -8,8 +8,8 @@ import { cn } from "@/lib/utils";
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 export const metadata: Metadata = {
-  title: "VSI-PMIS",
-  description: "Volunteer for Sustainable Initiatives Programme Management Information System",
+  title: "VSI-PMIS | Programme Management Information System",
+  description: "Visionary Students Initiative Programme Management Information System",
 };
 
 export default function RootLayout({

@@ -1,81 +1,178 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+
 
 export default function Sidebar() {
+
+  const pathname = usePathname();
+
+
+  const menuClass = (path: string) => {
+
+    const active = pathname === path;
+
+    return `
+      block rounded-lg px-4 py-3 transition
+      ${
+        active
+          ? "bg-[#003566] text-[#ffc300] font-semibold"
+          : "hover:bg-[#001d3d] text-white"
+      }
+    `;
+
+  };
+
+
   return (
-    <aside className="w-72 min-h-screen bg-slate-900 text-white">
-      <div className="p-6 border-b border-slate-700">
-        <h1 className="text-2xl font-bold">VSI-PMIS</h1>
-        <p className="text-sm text-slate-400">
+    <aside className="w-72 min-h-screen bg-[#000814] text-white flex flex-col">
+
+
+      {/* Identity */}
+      <div className="p-6 border-b border-[#003566]">
+
+        <h1 className="text-2xl font-bold text-[#ffc300]">
+          VSI-PMIS
+        </h1>
+
+        <p className="text-sm text-gray-300 mt-1">
           Programme Management Information System
         </p>
+
       </div>
 
-      <nav className="p-4 space-y-2">
+
+
+      {/* Navigation */}
+
+      <nav className="p-4 space-y-2 flex-1">
+
 
         <Link
           href="/"
-          className="block rounded-lg px-4 py-3 hover:bg-slate-800"
+          className={menuClass("/")}
         >
           Executive Dashboard
         </Link>
 
+
+
+        <p className="px-4 pt-5 pb-2 text-xs uppercase text-[#ffc300]">
+          Programme Management
+        </p>
+
+
         <Link
           href="/programmes"
-          className="block rounded-lg px-4 py-3 hover:bg-slate-800"
+          className={menuClass("/programmes")}
         >
           Programme Portfolio
         </Link>
 
+
+        <Link
+          href="/projects"
+          className={menuClass("/projects")}
+        >
+          Projects
+        </Link>
+
+
         <Link
           href="/activities"
-          className="block rounded-lg px-4 py-3 hover:bg-slate-800"
+          className={menuClass("/activities")}
         >
           Activities
         </Link>
 
+
+
         <Link
           href="/monitoring"
-          className="block rounded-lg px-4 py-3 hover:bg-slate-800"
+          className={menuClass("/monitoring")}
         >
-          Monitoring & Evaluation
+          Monitoring, Evaluation & Learning
         </Link>
+
+
 
         <Link
           href="/beneficiaries"
-          className="block rounded-lg px-4 py-3 hover:bg-slate-800"
+          className={menuClass("/beneficiaries")}
         >
-          Beneficiaries
+          Beneficiary Management
         </Link>
+
+
 
         <Link
           href="/volunteers"
-          className="block rounded-lg px-4 py-3 hover:bg-slate-800"
+          className={menuClass("/volunteers")}
         >
           Volunteer Management
         </Link>
 
+
+
+
+        <p className="px-4 pt-5 pb-2 text-xs uppercase text-[#ffc300]">
+          Knowledge & Reports
+        </p>
+
+
         <Link
           href="/reports"
-          className="block rounded-lg px-4 py-3 hover:bg-slate-800"
+          className={menuClass("/reports")}
         >
           Reports
         </Link>
 
+
+
         <Link
           href="/documents"
-          className="block rounded-lg px-4 py-3 hover:bg-slate-800"
+          className={menuClass("/documents")}
         >
           Documents
         </Link>
 
+
+
+
+        <p className="px-4 pt-5 pb-2 text-xs uppercase text-[#ffc300]">
+          System
+        </p>
+
+
+
         <Link
           href="/administration"
-          className="block rounded-lg px-4 py-3 hover:bg-slate-800"
+          className={menuClass("/administration")}
         >
-          Administration
+          System Administration
         </Link>
 
+
       </nav>
+
+
+
+      {/* Footer */}
+
+      <div className="p-4 border-t border-[#003566]">
+
+        <p className="text-sm text-gray-300">
+          Visionary Students Initiative (VSI)
+        </p>
+
+        <p className="text-xs text-[#ffc300]">
+          Sustainable Development Through Action
+        </p>
+
+      </div>
+
+
     </aside>
   );
 }

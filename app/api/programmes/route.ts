@@ -2,17 +2,33 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
 export async function GET() {
-  const programmes = await prisma.programme.findMany({
-    include: {
-      directorate: true,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+  try {
+    const programmes = await prisma.programme.findMany({
+      include: {
+        directorate: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
 
-  return NextResponse.json(programmes);
+    return NextResponse.json(programmes);
+
+  } catch (error) {
+    console.error("PROGRAMMES API ERROR:", error);
+
+    return NextResponse.json(
+      {
+        message: "Failed to fetch programmes",
+        error: String(error),
+      },
+      {
+        status: 500,
+      }
+    );
+  }
 }
+
 
 export async function POST(request: Request) {
   try {
@@ -32,12 +48,18 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json(programme);
+
   } catch (error) {
-    console.error(error);
+    console.error("CREATE PROGRAMME ERROR:", error);
 
     return NextResponse.json(
-      { message: "Failed to create programme." },
-      { status: 500 }
+      {
+        message: "Failed to create programme",
+        error: String(error),
+      },
+      {
+        status: 500,
+      }
     );
   }
 }

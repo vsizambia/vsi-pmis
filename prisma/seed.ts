@@ -1,60 +1,136 @@
-import { PrismaClient } from "@prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
+import prisma from "../lib/prisma";
 import bcrypt from "bcryptjs";
-
-const adapter = new PrismaPg({
-  connectionString: process.env.DATABASE_URL,
-});
-
-const prisma = new PrismaClient({
-  adapter,
-});
 
 async function main() {
   console.log("🌱 Seeding database...");
 
-  // ==========================
-  // ROLES
-  // ==========================
+  // =============================
+  // Roles
+  // =============================
 
   const adminRole = await prisma.role.upsert({
-    where: {
-      name: "Administrator",
-    },
+    where: { name: "Administrator" },
+    update: {},
+    create: { name: "Administrator" },
+  });
+
+  const executiveRole = await prisma.role.upsert({
+    where: { name: "Executive Director" },
+    update: {},
+    create: { name: "Executive Director" },
+  });
+
+  const programmeRole = await prisma.role.upsert({
+    where: { name: "Programme Manager" },
+    update: {},
+    create: { name: "Programme Manager" },
+  });
+
+  const financeRole = await prisma.role.upsert({
+    where: { name: "Finance Officer" },
+    update: {},
+    create: { name: "Finance Officer" },
+  });
+
+  const meRole = await prisma.role.upsert({
+    where: { name: "Monitoring & Evaluation Officer" },
+    update: {},
+    create: { name: "Monitoring & Evaluation Officer" },
+  });
+
+  // =============================
+  // Directorates
+  // =============================
+
+  const programmesDirectorate = await prisma.directorate.upsert({
+    where: { name: "Programmes" },
     update: {},
     create: {
-      name: "Administrator",
+      name: "Programmes",
+      description: "Programme implementation and management",
     },
   });
 
-  const programmeManagerRole = await prisma.role.upsert({
-    where: {
-      name: "Programme Manager",
-    },
+  const financeDirectorate = await prisma.directorate.upsert({
+    where: { name: "Finance & Administration" },
     update: {},
     create: {
-      name: "Programme Manager",
+      name: "Finance & Administration",
+      description: "Finance, HR and Administration",
     },
   });
 
-  const officerRole = await prisma.role.upsert({
-    where: {
-      name: "Programme Officer",
-    },
+  const communicationsDirectorate = await prisma.directorate.upsert({
+    where: { name: "Communications" },
     update: {},
     create: {
-      name: "Programme Officer",
+      name: "Communications",
+      description: "Communications and Partnerships",
     },
   });
 
+  // Prevent unused variable warning
+  void financeDirectorate;
+  void communicationsDirectorate;
 
-  // ==========================
-  // USERS
-  // ==========================
+  // =============================
+  // Programmes
+  // =============================
 
-  const hashedPassword = await bcrypt.hash("Admin@123", 10);
+  const civicProgramme = await prisma.programme.upsert({
+    where: {
+      name: "Civic Leadership and Democratic Governance Programme",
+    },
+    update: {},
+    create: {
+      name: "Civic Leadership and Democratic Governance Programme",
+      description:
+        "Preparing students for mental resilience and civic leadership.",
+      startYear: 2026,
+      endYear: 2030,
+      directorateId: programmesDirectorate.id,
+    },
+  });
 
-  await prisma.user.upsert({
+  // =============================
+  // Indicators
+  // =============================
+
+  await prisma.indicator.upsert({
+    where: {
+      name: "Students Trained",
+    },
+    update: {},
+    create: {
+      name: "Students Trained",
+      baseline: "0",
+      target: "10000",
+      achieved: "0",
+      programmeId: civicProgramme.id,
+    },
+  });
+
+  await prisma.indicator.upsert({
+    where: {
+      name: "Schools Reached",
+    },
+    update: {},
+    create: {
+      name: "Schools Reached",
+      baseline: "0",
+      target: "200",
+      achieved: "0",
+      programmeId: civicProgramme.id,
+    },
+  });
+
+  // =============================
+  // Administrator
+  // =============================
+
+  const password = await bcrypt.hash("Admin@123", 10);
+
+  const admin = await prisma.user.upsert({
     where: {
       email: "admin@vsi.org.zm",
     },
@@ -62,80 +138,78 @@ async function main() {
     create: {
       name: "System Administrator",
       email: "admin@vsi.org.zm",
-      password: hashedPassword,
+      password,
       roleId: adminRole.id,
     },
   });
 
+  // =============================
+  // Sample Project
+  // =============================
 
-  // ==========================
-  // DIRECTORATES
-  // ==========================
-
-  const programmesDirectorate = await prisma.directorate.upsert({
-    where: {
-      name: "Directorate of Programmes",
-    },
-    update: {},
-    create: {
-      name: "Directorate of Programmes",
+  const project = await prisma.project.create({
+    data: {
+      name: "Mental Resilience in Secondary Schools",
       description:
-        "Responsible for programme planning, implementation, monitoring and evaluation of VSI interventions.",
+        "Training learners in civic leadership and mental resilience.",
+      status: "Active",
+      budget: 150000,
+      currency: "ZMW",
+      startDate: new Date("2026-01-01"),
+      endDate: new Date("2026-12-31"),
+      programmeId: civicProgramme.id,
+      projectManagerId: admin.id,
     },
   });
 
+  // =============================
+  // Location
+  // =============================
 
-  // ==========================
-  // PROGRAMMES
-  // ==========================
-
-  await prisma.programme.createMany({
-    data: [
-      {
-        name: "Civic Leadership and Democratic Governance Programme",
-        description:
-          "Promotes civic awareness, democratic values, leadership development and citizen participation among young people and communities.",
-        startYear: 2026,
-        endYear: 2029,
-        directorateId: programmesDirectorate.id,
-      },
-      {
-        name: "Youth Empowerment Programme",
-        description:
-          "Builds youth capacity through leadership training, skills development and community engagement initiatives.",
-        startYear: 2026,
-        endYear: 2029,
-        directorateId: programmesDirectorate.id,
-      },
-      {
-        name: "Mental Health Resilience Programme",
-        description:
-          "Strengthens mental health awareness, resilience and wellbeing among students and communities.",
-        startYear: 2026,
-        endYear: 2029,
-        directorateId: programmesDirectorate.id,
-      },
-      {
-        name: "Community Development Programme",
-        description:
-          "Supports community-led initiatives that promote sustainable local development and social accountability.",
-        startYear: 2026,
-        endYear: 2029,
-        directorateId: programmesDirectorate.id,
-      },
-    ],
-    skipDuplicates: true,
+  await prisma.projectLocation.create({
+    data: {
+      projectId: project.id,
+      country: "Zambia",
+      province: "Lusaka",
+      district: "Lusaka",
+    },
   });
 
+ // =============================
+  // Beneficiary
+  // =============================
 
-  console.log("✅ VSI Directorates and Programmes seeded successfully.");
-  console.log("✅ Seed completed successfully.");
+  await prisma.beneficiary.create({
+    data: {
+      projectId: project.id,
+      gender: "Mixed",
+      age: 17,
+      ageGroup: "Children (0-17)",
+      number: 500,
+    },
+  });
+  
+  // =============================
+  // Activity
+  // =============================
+
+  await prisma.activity.create({
+    data: {
+      title: "School Leadership Training",
+      description: "Training student leaders.",
+      status: "Planned",
+      startDate: new Date("2026-08-01"),
+      endDate: new Date("2026-08-05"),
+      projectId: project.id,
+    },
+  });
+
+  console.log("✅ Database seeded successfully.");
 }
 
-
 main()
-  .catch((error) => {
-    console.error(error);
+  .catch((e) => {
+    console.error(e);
     process.exit(1);
   })
   .finally(async () => {

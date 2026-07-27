@@ -1,148 +1,356 @@
-"use client";
+import prisma from "@/lib/prisma";
+import Link from "next/link";
 
-import { useEffect, useState } from "react";
 
-type Directorate = {
-  id: string;
-  name: string;
-  description?: string;
-};
+export default async function DirectoratesPage() {
 
-export default function DirectoratesPage() {
-  const [directorates, setDirectorates] = useState<Directorate[]>([]);
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
 
-  async function loadDirectorates() {
-    const response = await fetch("/api/directorates");
-    const data = await response.json();
+  const directorates = await prisma.directorate.findMany({
 
-    setDirectorates(data);
-  }
+    include: {
 
-useEffect(() => {
-  async function fetchDirectorates() {
-    await loadDirectorates();
-  }
+      programmes: {
 
-  fetchDirectorates();
-}, []);
+        include: {
 
-  async function addDirectorate(e: React.FormEvent) {
-    e.preventDefault();
+          projects: true,
+          indicators: true,
 
-    await fetch("/api/directorates", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+        },
+
       },
-      body: JSON.stringify({
-        name,
-        description,
-      }),
-    });
 
-    setName("");
-    setDescription("");
+    },
 
-    loadDirectorates();
-  }
+    orderBy: {
+
+      name: "asc",
+
+    },
+
+  });
+
+
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-8">
+
+    <div className="space-y-8">
+
+
+      {/* Header */}
+
+      <div className="flex justify-between items-center">
+
+
         <div>
-          <h1 className="text-3xl font-bold">
+
+          <h1 className="text-3xl font-bold text-vsi-navy">
+
             Directorates
+
           </h1>
 
-          <p className="text-gray-600 mt-2">
-            Manage VSI organisational directorates.
+
+          <p className="mt-2 text-gray-600">
+
+            VSI Secretariat organisational structure and programme portfolio.
+
           </p>
+
+
         </div>
-      </div>
 
 
-      <div className="bg-white rounded-lg shadow p-6 mb-8">
 
-        <h2 className="text-xl font-semibold mb-4">
-          Add New Directorate
-        </h2>
 
-        <form
-          onSubmit={addDirectorate}
-          className="space-y-4"
+        <Link
+
+          href="/directorates/new"
+
+          className="
+          bg-vsi-yellow
+          text-vsi-navy
+          px-5
+          py-3
+          rounded-lg
+          font-semibold
+          shadow
+          hover:bg-vsi-gold
+          "
+
         >
 
-          <input
-            className="w-full border rounded p-3"
-            placeholder="Directorate name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
+          + New Directorate
 
-          <textarea
-            className="w-full border rounded p-3"
-            placeholder="Description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
+        </Link>
 
-          <button
-            className="bg-blue-600 text-white px-6 py-3 rounded"
-            type="submit"
+
+      </div>
+
+
+
+
+
+      {/* Directorates */}
+
+
+      <div className="space-y-6">
+
+
+        {directorates.map((directorate) => (
+
+
+
+          <div
+
+            key={directorate.id}
+
+            className="
+            bg-white
+            rounded-xl
+            shadow
+            border-l-8
+            border-vsi-navy
+            p-6
+            "
+
           >
-            Save Directorate
-          </button>
-
-        </form>
-
-      </div>
 
 
-      <div className="bg-white rounded-lg shadow">
 
-        <table className="w-full">
-
-          <thead className="border-b">
-            <tr>
-              <th className="text-left p-4">
-                Name
-              </th>
-
-              <th className="text-left p-4">
-                Description
-              </th>
-            </tr>
-          </thead>
+            {/* Directorate Header */}
 
 
-          <tbody>
+            <div className="flex justify-between">
 
-            {directorates.map((directorate) => (
-              <tr
-                key={directorate.id}
-                className="border-b"
-              >
 
-                <td className="p-4 font-medium">
+              <div>
+
+
+                <Link
+
+                  href={`/directorates/${directorate.id}`}
+
+                  className="
+                  text-2xl
+                  font-bold
+                  text-vsi-navy
+                  hover:text-vsi-blue
+                  "
+
+                >
+
                   {directorate.name}
-                </td>
 
-                <td className="p-4 text-gray-600">
-                  {directorate.description || "-"}
-                </td>
+                </Link>
 
-              </tr>
-            ))}
 
-          </tbody>
 
-        </table>
+                <p className="mt-2 text-gray-600">
+
+                  {directorate.description ||
+                    "No description provided."}
+
+                </p>
+
+
+              </div>
+
+
+
+
+              <div className="text-right">
+
+
+                <p className="text-sm text-gray-500">
+
+                  Programmes
+
+                </p>
+
+
+                <p className="
+                text-3xl
+                font-bold
+                text-vsi-yellow
+                ">
+
+                  {directorate.programmes.length}
+
+                </p>
+
+
+              </div>
+
+
+            </div>
+
+
+
+
+
+
+            {/* Programmes under Directorate */}
+
+
+            <div className="mt-6">
+
+
+              <h3 className="
+              font-semibold
+              text-vsi-navy
+              mb-3
+              ">
+
+                Programmes Managed
+
+              </h3>
+
+
+
+
+              {directorate.programmes.length === 0 && (
+
+
+                <p className="text-gray-500 italic">
+
+                  No programmes assigned.
+
+                </p>
+
+
+              )}
+
+
+
+
+
+
+              <div className="
+              grid
+              grid-cols-1
+              md:grid-cols-2
+              gap-4
+              ">
+
+
+
+                {directorate.programmes.map((programme) => (
+
+
+
+                  <div
+
+                    key={programme.id}
+
+                    className="
+                    border
+                    rounded-lg
+                    p-4
+                    bg-gray-50
+                    "
+
+                  >
+
+
+
+                    <h4 className="
+                    font-bold
+                    text-gray-900
+                    ">
+
+                      {programme.name}
+
+                    </h4>
+
+
+
+                    <p className="text-sm text-gray-600 mt-1">
+
+                      {programme.description ||
+                        "No description."}
+
+                    </p>
+
+
+
+
+                    <div className="
+                    flex
+                    gap-6
+                    mt-4
+                    text-sm
+                    ">
+
+
+
+                      <span>
+
+                        Projects:
+
+                        <strong className="ml-1 text-vsi-navy">
+
+                          {programme.projects.length}
+
+                        </strong>
+
+
+                      </span>
+
+
+
+
+
+                      <span>
+
+                        Indicators:
+
+                        <strong className="ml-1 text-vsi-navy">
+
+                          {programme.indicators.length}
+
+                        </strong>
+
+
+                      </span>
+
+
+
+                    </div>
+
+
+
+                  </div>
+
+
+
+                ))}
+
+
+              </div>
+
+
+
+            </div>
+
+
+
+
+          </div>
+
+
+
+        ))}
+
+
 
       </div>
+
+
 
     </div>
+
+
   );
+
 }

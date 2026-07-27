@@ -2,6 +2,13 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+@theme {
+  --color-vsi-blue: #094074;
+  --color-vsi-baltic: #3c6997;
+  --color-vsi-navy: #003566;
+  --color-vsi-yellow: #ffc300;
+  --color-vsi-gold: #ffd60a;
+}
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
