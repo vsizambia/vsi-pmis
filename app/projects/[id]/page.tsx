@@ -1,412 +1,165 @@
 import prisma from "@/lib/prisma";
 import Link from "next/link";
 
+import StatusBadge from "@/components/common/StatusBadge";
+import { formatCurrency, formatDate } from "@/lib/format";
 
 export default async function ProjectDetailsPage({
   params,
 }: {
-  params: Promise<{
-    id: string;
-  }>;
+  params: Promise<{ id: string }>;
 }) {
-
-
   const { id } = await params;
 
-
   const project = await prisma.project.findUnique({
-
-    where: {
-      id,
-    },
-
+    where: { id },
     include: {
-
       programme: true,
-
       activities: {
         orderBy: {
           createdAt: "desc",
         },
       },
-
     },
-
   });
 
-
-
   if (!project) {
-
     return (
-
       <div className="p-8">
-
         <h1 className="text-xl font-bold text-[#001d3d]">
           Project Not Found
         </h1>
-
       </div>
-
     );
-
   }
 
-
-
   return (
-
-    <div className="p-8 space-y-6">
-
-
-
+    <div className="space-y-6 p-8">
       {/* Header */}
-
-      <div className="flex justify-between items-center">
-
-
+      <div className="flex items-center justify-between">
         <div>
-
           <h1 className="text-3xl font-bold text-[#001d3d]">
             Project Details
           </h1>
-
-
-          <p className="text-gray-600 mt-2">
+          <p className="mt-2 text-gray-600">
             Project implementation profile
           </p>
-
-
         </div>
-
-
-
 
         <div className="flex gap-3">
-
-
           <Link
-
             href="/projects"
-
-            className="border border-[#003566] text-[#003566] px-5 py-3 rounded-lg hover:bg-gray-100"
-
+            className="rounded-lg border border-[#003566] px-5 py-3 text-[#003566] hover:bg-gray-100"
           >
-
             Back to Projects
-
           </Link>
-
-
-
 
           <Link
-
             href={`/projects/${project.id}/edit`}
-
-            className="bg-[#003566] text-white px-5 py-3 rounded-lg hover:bg-[#001d3d]"
-
+            className="rounded-lg bg-[#003566] px-5 py-3 text-white hover:bg-[#001d3d]"
           >
-
             Edit Project
-
           </Link>
-
-
         </div>
-
-
       </div>
-
-
-
-
 
       {/* Project Information */}
-
-
-      <div className="bg-white rounded-lg shadow p-6 space-y-5">
-
-
+      <div className="space-y-5 rounded-lg bg-white p-6 shadow">
         <h2 className="text-2xl font-semibold text-[#003566]">
-
           {project.name}
-
         </h2>
 
-
-
-
-        <p>
-
-          <strong>Description:</strong>
-
-          <br />
-
-          {project.description || "No description provided"}
-
-        </p>
-
-
-
-
-
-        <p>
-
-          <strong>Programme:</strong>{" "}
-
-          {project.programme.name}
-
-        </p>
-
-
-
-
-
-        <p>
-
-          <strong>Status:</strong>{" "}
-
-
-
-          <span
-
-            className={`
-              px-3 py-1 rounded-full text-sm font-medium
-              ${
-                project.status === "Ongoing"
-                  ? "bg-green-100 text-green-700"
-                  : project.status === "Completed"
-                  ? "bg-blue-100 text-blue-700"
-                  : "bg-yellow-100 text-yellow-700"
-              }
-            `}
-
-          >
-
-            {project.status}
-
-          </span>
-
-
-        </p>
-
-
-
-
-
-        <p>
-
-          <strong>Budget:</strong>{" "}
-
-          {project.budget
-            ? `K ${project.budget.toLocaleString()}`
-            : "Not allocated"}
-
-        </p>
-
-
-
-
-
-        <div className="grid md:grid-cols-2 gap-4">
-
-
-          <p>
-
-            <strong>Start Date:</strong>{" "}
-
-            {project.startDate
-              ? project.startDate.toDateString()
-              : "Not set"}
-
+        <div>
+          <h3 className="font-semibold text-gray-700">Description</h3>
+          <p className="mt-1 text-gray-600">
+            {project.description || "No description provided"}
           </p>
-
-
-
-
-
-          <p>
-
-            <strong>End Date:</strong>{" "}
-
-            {project.endDate
-              ? project.endDate.toDateString()
-              : "Not set"}
-
-          </p>
-
-
         </div>
 
-
-
-      </div>
-
-
-
-
-
-
-
-      {/* Implementation Activities */}
-
-
-      <div className="bg-white rounded-lg shadow p-6">
-
-
-
-        <div className="flex justify-between items-center mb-5">
-
-
+        <div className="grid gap-4 md:grid-cols-2">
           <div>
-
-            <h2 className="text-2xl font-semibold text-[#003566]">
-
-              Implementation Activities
-
-            </h2>
-
-
-            <p className="text-sm text-gray-500">
-
-              {project.activities.length} activity(ies) registered
-
-            </p>
-
-
+            <h3 className="font-semibold text-gray-700">Programme</h3>
+            <p>{project.programme.name}</p>
           </div>
 
+          <div>
+            <h3 className="font-semibold text-gray-700">Status</h3>
+            <StatusBadge status={project.status} />
+          </div>
 
+          <div>
+            <h3 className="font-semibold text-gray-700">Budget</h3>
+            <p>{formatCurrency(project.budget, project.currency)}</p>
+          </div>
 
+          <div>
+            <h3 className="font-semibold text-gray-700">Currency</h3>
+            <p>{project.currency}</p>
+          </div>
 
+          <div>
+            <h3 className="font-semibold text-gray-700">Start Date</h3>
+            <p>{formatDate(project.startDate)}</p>
+          </div>
 
-          <Link
-
-            href={`/activities/new?projectId=${project.id}`}
-
-            className="bg-[#ffc300] text-[#000814] px-4 py-2 rounded-lg font-medium hover:bg-[#ffd60a]"
-
-          >
-
-            Add Activity
-
-          </Link>
-
-
-
+          <div>
+            <h3 className="font-semibold text-gray-700">End Date</h3>
+            <p>{formatDate(project.endDate)}</p>
+          </div>
         </div>
-
-
-
-
-
-
-
-        <div className="space-y-3">
-
-
-
-
-
-          {project.activities.length === 0 && (
-
-            <p className="text-gray-500">
-
-              No activities registered for this project.
-
-            </p>
-
-          )}
-
-
-
-
-
-
-
-          {project.activities.map((activity) => (
-
-
-            <Link
-
-              key={activity.id}
-
-              href={`/activities/${activity.id}`}
-
-              className="block border rounded-lg p-4 hover:bg-gray-50"
-
-            >
-
-
-
-              <div className="flex justify-between items-center">
-
-
-
-                <div>
-
-
-                  <h3 className="font-semibold text-[#001d3d]">
-
-                    {activity.title}
-
-                  </h3>
-
-
-
-                  <p className="text-sm text-gray-600">
-
-                    {activity.description || "No description"}
-
-                  </p>
-
-
-
-                </div>
-
-
-
-
-
-                <span
-
-                  className="
-                    px-3 py-1 rounded-full 
-                    bg-blue-100 text-blue-700 text-sm
-                  "
-
-                >
-
-                  {activity.status}
-
-                </span>
-
-
-
-              </div>
-
-
-
-            </Link>
-
-
-          ))}
-
-
-
-
-        </div>
-
-
-
       </div>
 
+      {/* Activities */}
+      <div className="rounded-lg bg-white p-6 shadow">
+        <div className="mb-5 flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-semibold text-[#003566]">
+              Implementation Activities
+            </h2>
 
+            <p className="text-sm text-gray-500">
+              {project.activities.length} activity(ies) registered
+            </p>
+          </div>
 
+          <Link
+            href={`/activities/new?projectId=${project.id}`}
+            className="rounded-lg bg-[#ffc300] px-4 py-2 font-medium text-[#000814] hover:bg-[#ffd60a]"
+          >
+            Add Activity
+          </Link>
+        </div>
 
+        <div className="space-y-3">
+          {project.activities.length === 0 ? (
+            <p className="text-gray-500">
+              No activities registered for this project.
+            </p>
+          ) : (
+            project.activities.map((activity) => (
+              <Link
+                key={activity.id}
+                href={`/activities/${activity.id}`}
+                className="block rounded-lg border p-4 transition hover:bg-gray-50"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-semibold text-[#001d3d]">
+                      {activity.title}
+                    </h3>
+
+                    <p className="mt-1 text-sm text-gray-600">
+                      {activity.description || "No description"}
+                    </p>
+                  </div>
+
+                  <StatusBadge status={activity.status} />
+                </div>
+              </Link>
+            ))
+          )}
+        </div>
+      </div>
     </div>
-
   );
-
 }

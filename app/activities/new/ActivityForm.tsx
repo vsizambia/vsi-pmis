@@ -3,29 +3,61 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
+
+type Project = {
+  id: string;
+  name: string;
+};
+
+
+type ActivityFormData = {
+  title: string;
+  description: string;
+  status: string;
+  projectId: string;
+  startDate: string;
+  endDate: string;
+};
+
+
 export default function ActivityForm() {
+
   const router = useRouter();
 
-  const [projects, setProjects] = useState<any[]>([]);
 
-  const [formData, setFormData] = useState({
+  const [projects, setProjects] = useState<Project[]>([]);
+
+
+  const [formData, setFormData] = useState<ActivityFormData>({
+
     title: "",
+
     description: "",
+
     status: "Planned",
+
     projectId: "",
+
     startDate: "",
+
     endDate: "",
+
   });
 
 
+
   useEffect(() => {
+
     async function loadProjects() {
+
       const response = await fetch("/api/projects");
 
       const data = await response.json();
 
       setProjects(data);
+
     }
+
 
     loadProjects();
 
@@ -33,21 +65,28 @@ export default function ActivityForm() {
 
 
 
+
   function handleChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) {
 
     setFormData({
+
       ...formData,
+
       [e.target.name]: e.target.value,
+
     });
 
   }
 
 
 
+
   async function handleSubmit(
-    e: React.FormEvent
+    e: React.FormEvent<HTMLFormElement>
   ) {
 
     e.preventDefault();
@@ -56,10 +95,11 @@ export default function ActivityForm() {
     const response = await fetch(
       "/api/activities",
       {
+
         method: "POST",
 
-        headers:{
-          "Content-Type":"application/json",
+        headers: {
+          "Content-Type": "application/json",
         },
 
         body: JSON.stringify(formData),
@@ -68,7 +108,8 @@ export default function ActivityForm() {
     );
 
 
-    if(response.ok){
+
+    if (response.ok) {
 
       router.push("/activities");
 
@@ -77,6 +118,7 @@ export default function ActivityForm() {
     }
 
   }
+
 
 
 
@@ -94,15 +136,23 @@ export default function ActivityForm() {
           Activity Title
         </label>
 
+
         <input
+
           name="title"
+
           value={formData.title}
+
           onChange={handleChange}
+
           className="border p-2 w-full rounded"
+
           required
+
         />
 
       </div>
+
 
 
 
@@ -112,14 +162,21 @@ export default function ActivityForm() {
           Description
         </label>
 
+
         <textarea
+
           name="description"
+
           value={formData.description}
+
           onChange={handleChange}
+
           className="border p-2 w-full rounded"
+
         />
 
       </div>
+
 
 
 
@@ -129,12 +186,19 @@ export default function ActivityForm() {
           Project
         </label>
 
+
         <select
+
           name="projectId"
+
           value={formData.projectId}
+
           onChange={handleChange}
+
           className="border p-2 w-full rounded"
+
           required
+
         >
 
           <option value="">
@@ -142,19 +206,26 @@ export default function ActivityForm() {
           </option>
 
 
-          {projects.map((project)=>(
+
+          {projects.map((project) => (
+
             <option
               key={project.id}
               value={project.id}
             >
+
               {project.name}
+
             </option>
+
           ))}
 
 
         </select>
 
+
       </div>
+
 
 
 
@@ -166,21 +237,28 @@ export default function ActivityForm() {
 
 
         <select
+
           name="status"
+
           value={formData.status}
+
           onChange={handleChange}
+
           className="border p-2 w-full rounded"
+
         >
 
-          <option>
+          <option value="Planned">
             Planned
           </option>
 
-          <option>
+
+          <option value="Ongoing">
             Ongoing
           </option>
 
-          <option>
+
+          <option value="Completed">
             Completed
           </option>
 
@@ -189,6 +267,7 @@ export default function ActivityForm() {
 
 
       </div>
+
 
 
 
@@ -201,15 +280,23 @@ export default function ActivityForm() {
             Start Date
           </label>
 
+
           <input
+
             type="date"
+
             name="startDate"
+
             value={formData.startDate}
+
             onChange={handleChange}
+
             className="border p-2 w-full rounded"
+
           />
 
         </div>
+
 
 
 
@@ -219,12 +306,19 @@ export default function ActivityForm() {
             End Date
           </label>
 
+
           <input
+
             type="date"
+
             name="endDate"
+
             value={formData.endDate}
+
             onChange={handleChange}
+
             className="border p-2 w-full rounded"
+
           />
 
         </div>
@@ -234,11 +328,17 @@ export default function ActivityForm() {
 
 
 
+
       <button
+
         type="submit"
+
         className="bg-blue-600 text-white px-5 py-2 rounded"
+
       >
+
         Save Activity
+
       </button>
 
 

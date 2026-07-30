@@ -4,18 +4,27 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 
+type Activity = {
+  id: string;
+  title: string;
+  description?: string | null;
+  status: string;
+};
+
+
 export default function ActivityEditForm({
   activity,
 }: {
-  activity: any;
+  activity: Activity;
 }) {
 
   const router = useRouter();
 
 
   const [title, setTitle] = useState(activity.title);
+
   const [description, setDescription] = useState(
-    activity.description || ""
+    activity.description ?? ""
   );
 
   const [status, setStatus] = useState(
@@ -24,7 +33,7 @@ export default function ActivityEditForm({
 
 
   async function handleSubmit(
-    e: React.FormEvent
+    e: React.FormEvent<HTMLFormElement>
   ) {
 
     e.preventDefault();
@@ -70,18 +79,18 @@ export default function ActivityEditForm({
       className="space-y-5 max-w-xl"
     >
 
-
       <div>
 
         <label className="block font-medium">
           Activity Title
         </label>
 
+
         <input
 
           value={title}
 
-          onChange={(e)=>
+          onChange={(e) =>
             setTitle(e.target.value)
           }
 
@@ -104,7 +113,7 @@ export default function ActivityEditForm({
 
           value={description}
 
-          onChange={(e)=>
+          onChange={(e) =>
             setDescription(e.target.value)
           }
 
@@ -115,7 +124,6 @@ export default function ActivityEditForm({
         />
 
       </div>
-
 
 
 
@@ -130,7 +138,7 @@ export default function ActivityEditForm({
 
           value={status}
 
-          onChange={(e)=>
+          onChange={(e) =>
             setStatus(e.target.value)
           }
 
@@ -156,7 +164,6 @@ export default function ActivityEditForm({
 
 
 
-
       <button
 
         type="submit"
@@ -170,8 +177,8 @@ export default function ActivityEditForm({
       </button>
 
 
-
     </form>
 
   );
+
 }

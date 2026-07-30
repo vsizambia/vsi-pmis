@@ -1,4 +1,7 @@
+import Link from "next/link";
+
 import prisma from "@/lib/prisma";
+
 import ActivitiesTable from "./components/ActivitiesTable";
 import ActivityStats from "./components/ActivityStats";
 
@@ -9,21 +12,31 @@ export default async function ActivitiesPage() {
   const activities = await prisma.activity.findMany({
 
     include: {
+
       project: {
+
         include: {
+
           programme: true,
+
         },
+
       },
+
     },
 
     orderBy: {
+
       createdAt: "desc",
+
     },
 
   });
 
 
+
   const totalActivities = activities.length;
+
 
 
   const ongoingActivities = activities.filter(
@@ -32,16 +45,19 @@ export default async function ActivitiesPage() {
   ).length;
 
 
+
   const plannedActivities = activities.filter(
     (activity) =>
       activity.status === "Planned"
   ).length;
 
 
+
   const completedActivities = activities.filter(
     (activity) =>
       activity.status === "Completed"
   ).length;
+
 
 
 
@@ -52,34 +68,52 @@ export default async function ActivitiesPage() {
 
       <div className="flex justify-between items-center">
 
+
         <h1 className="text-3xl font-bold">
           Activities Management
         </h1>
 
 
-        <a
+
+        <Link
+
           href="/activities/new"
+
           className="bg-green-600 text-white px-4 py-2 rounded"
+
         >
+
           New Activity
-        </a>
+
+        </Link>
+
 
       </div>
 
 
 
+
       <ActivityStats
+
         total={totalActivities}
+
         ongoing={ongoingActivities}
+
         planned={plannedActivities}
+
         completed={completedActivities}
+
       />
+
 
 
 
       <ActivitiesTable
+
         activities={activities}
+
       />
+
 
 
     </div>

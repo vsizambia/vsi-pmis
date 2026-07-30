@@ -1,16 +1,22 @@
 import prisma from "@/lib/prisma";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
+
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 
 export default async function Dashboard() {
-
 
   const [
     programmes,
     projects,
     activities,
     indicators,
+
   ] = await Promise.all([
 
     prisma.programme.count(),
@@ -24,155 +30,146 @@ export default async function Dashboard() {
   ]);
 
 
+  const statistics = [
+
+    {
+      title: "Registered Programmes",
+      value: programmes,
+      colour: "border-[#003566]",
+      text: "text-[#003566]",
+    },
+
+    {
+      title: "Projects",
+      value: projects,
+      colour: "border-[#ffc300]",
+      text: "text-[#001d3d]",
+    },
+
+    {
+      title: "Activities",
+      value: activities,
+      colour: "border-[#ffd60a]",
+      text: "text-[#003566]",
+    },
+
+    {
+      title: "Indicators",
+      value: indicators,
+      colour: "border-[#000814]",
+      text: "text-[#000814]",
+    },
+
+  ];
+
 
   return (
 
-    <main className="p-8 bg-slate-100 min-h-screen">
+    <main className="min-h-screen bg-slate-100 p-6 md:p-8">
 
 
-      <h1 className="text-3xl font-bold text-[#001d3d]">
-        Executive Secretariat Dashboard
-      </h1>
+      <section>
+
+        <h1 className="text-3xl font-bold text-[#001d3d]">
+          Executive Secretariat Dashboard
+        </h1>
 
 
-      <p className="text-slate-600 mt-2">
-        Real-time overview of programmes, projects, activities and performance indicators
-      </p>
+        <p className="mt-2 text-slate-600">
+          Real-time overview of programmes, projects,
+          activities and performance indicators.
+        </p>
 
-
-
-
-      <div className="grid md:grid-cols-4 gap-6 mt-8">
-
-
-
-        <Card className="border-t-4 border-[#003566]">
-
-          <CardHeader>
-            <CardTitle>
-              Registered Programmes
-            </CardTitle>
-          </CardHeader>
-
-          <CardContent>
-
-            <p className="text-5xl font-bold text-[#003566]">
-              {programmes}
-            </p>
-
-          </CardContent>
-
-        </Card>
+      </section>
 
 
 
+      <section className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
 
-        <Card className="border-t-4 border-[#ffc300]">
 
-          <CardHeader>
-            <CardTitle>
-              Projects
-            </CardTitle>
-          </CardHeader>
+        {statistics.map((item) => (
 
-          <CardContent>
+          <Card
+            key={item.title}
+            className={`border-t-4 ${item.colour} shadow-sm`}
+          >
 
-            <p className="text-5xl font-bold text-[#001d3d]">
-              {projects}
-            </p>
+            <CardHeader>
 
-          </CardContent>
+              <CardTitle className="text-sm text-slate-600">
+                {item.title}
+              </CardTitle>
 
-        </Card>
+            </CardHeader>
+
+
+            <CardContent>
+
+              <p
+                className={`text-5xl font-bold ${item.text}`}
+              >
+                {item.value}
+              </p>
+
+            </CardContent>
+
+          </Card>
+
+        ))}
+
+
+      </section>
 
 
 
 
-        <Card className="border-t-4 border-[#ffd60a]">
-
-          <CardHeader>
-            <CardTitle>
-              Activities
-            </CardTitle>
-          </CardHeader>
-
-          <CardContent>
-
-            <p className="text-5xl font-bold text-[#003566]">
-              {activities}
-            </p>
-
-          </CardContent>
-
-        </Card>
-
-
-
-
-        <Card className="border-t-4 border-[#000814]">
-
-          <CardHeader>
-            <CardTitle>
-              Indicators
-            </CardTitle>
-          </CardHeader>
-
-          <CardContent>
-
-            <p className="text-5xl font-bold text-[#000814]">
-              {indicators}
-            </p>
-
-          </CardContent>
-
-        </Card>
-
-
-      </div>
-
-
-
-
-
-      <div className="grid md:grid-cols-2 gap-6 mt-8">
-
+      <section className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
 
 
         <Card>
 
           <CardHeader>
+
             <CardTitle>
               Programme Portfolio
             </CardTitle>
+
           </CardHeader>
 
 
-          <CardContent>
-
-            <div className="space-y-3">
+          <CardContent className="space-y-3">
 
 
-              <Link
-                href="/programmes"
-                className="block p-3 rounded-lg bg-[#003566]/10 hover:bg-[#003566]/20"
-              >
-                View Programme Portfolio
-              </Link>
+            <Link
+              href="/programmes"
+              className="
+                block rounded-lg
+                bg-[#003566]/10
+                p-3
+                transition
+                hover:bg-[#003566]/20
+              "
+            >
+              View Programme Portfolio
+            </Link>
 
 
 
-              <Link
-                href="/activities"
-                className="block p-3 rounded-lg bg-[#ffc300]/20 hover:bg-[#ffc300]/30"
-              >
-                View Programme Activities
-              </Link>
+            <Link
+              href="/activities"
+              className="
+                block rounded-lg
+                bg-[#ffc300]/20
+                p-3
+                transition
+                hover:bg-[#ffc300]/30
+              "
+            >
+              View Programme Activities
+            </Link>
 
-
-            </div>
 
           </CardContent>
-
 
         </Card>
 
@@ -183,56 +180,77 @@ export default async function Dashboard() {
         <Card>
 
           <CardHeader>
+
             <CardTitle>
               Quick Actions
             </CardTitle>
+
           </CardHeader>
 
 
-          <CardContent>
-
-            <div className="space-y-3">
+          <CardContent className="space-y-3">
 
 
-              <Link
-                href="/programmes/new"
-                className="block text-center bg-[#003566] text-white rounded p-3"
-              >
-                Register Programme
-              </Link>
-
-
-
-              <Link
-                href="/projects/new"
-                className="block text-center bg-[#001d3d] text-white rounded p-3"
-              >
-                Create Project
-              </Link>
+            <Link
+              href="/programmes/new"
+              className="
+                block rounded-lg
+                bg-[#003566]
+                p-3
+                text-center
+                text-white
+                transition
+                hover:bg-[#001d3d]
+              "
+            >
+              Register Programme
+            </Link>
 
 
 
-              <Link
-                href="/activities/new"
-                className="block text-center bg-[#ffc300] text-[#000814] rounded p-3"
-              >
-                Add Activity
-              </Link>
+            <Link
+              href="/projects/new"
+              className="
+                block rounded-lg
+                bg-[#001d3d]
+                p-3
+                text-center
+                text-white
+                transition
+                hover:bg-[#000814]
+              "
+            >
+              Create Project
+            </Link>
 
 
-            </div>
+
+            <Link
+              href="/activities/new"
+              className="
+                block rounded-lg
+                bg-[#ffc300]
+                p-3
+                text-center
+                text-[#000814]
+                transition
+                hover:bg-[#ffd60a]
+              "
+            >
+              Add Activity
+            </Link>
+
 
           </CardContent>
-
 
         </Card>
 
 
-
-      </div>
+      </section>
 
 
     </main>
 
   );
+
 }

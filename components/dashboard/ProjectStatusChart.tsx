@@ -5,8 +5,8 @@ import {
   Pie,
   Cell,
   ResponsiveContainer,
-  Legend,
   Tooltip,
+  Legend,
 } from "recharts";
 
 
@@ -22,8 +22,6 @@ export default function ProjectStatusChart({
   ongoing,
   completed,
 }: ProjectStatusChartProps) {
-
-  const total = planned + ongoing + completed;
 
 
   const data = [
@@ -42,131 +40,52 @@ export default function ProjectStatusChart({
   ];
 
 
-  const getPercentage = (value: number) => {
-    if (total === 0) return 0;
-
-    return Math.round((value / total) * 100);
-  };
+  const COLORS = [
+    "#3b82f6",
+    "#f59e0b",
+    "#10b981",
+  ];
 
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
 
-      <h2 className="text-xl font-semibold text-gray-800 mb-4">
-        Project Portfolio Status
-      </h2>
+    <div className="h-[340px] w-full">
 
+      <ResponsiveContainer width="100%" height="100%">
 
-      <div className="relative">
+        <PieChart>
 
-        <ResponsiveContainer width="100%" height={320}>
+          <Pie
+            data={data}
+            cx="50%"
+            cy="50%"
+            innerRadius={60}
+            outerRadius={100}
+            paddingAngle={5}
+            dataKey="value"
+          >
 
-          <PieChart>
+            {data.map((entry, index) => (
 
-            <Pie
-              data={data}
-              dataKey="value"
-              nameKey="name"
-              cx="50%"
-              cy="50%"
-              innerRadius={70}
-              outerRadius={110}
-              paddingAngle={3}
-              label={({ name, value }) =>
-                `${name}: ${value}`
-              }
-            >
+              <Cell
+                key={`cell-${entry.name}`}
+                fill={COLORS[index]}
+              />
 
-              {data.map((entry, index) => (
+            ))}
 
-                <Cell
-                  key={`cell-${index}`}
-                />
-
-              ))}
-
-            </Pie>
+          </Pie>
 
 
-            <Tooltip />
+          <Tooltip />
 
+          <Legend />
 
-            <Legend />
+        </PieChart>
 
-          </PieChart>
-
-        </ResponsiveContainer>
-
-
-
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-
-          <div className="text-center">
-
-            <p className="text-3xl font-bold text-gray-900">
-              {total}
-            </p>
-
-            <p className="text-sm text-gray-500">
-              Total Projects
-            </p>
-
-          </div>
-
-        </div>
-
-
-      </div>
-
-
-
-      <div className="grid grid-cols-3 gap-4 mt-4 text-center">
-
-
-        <div>
-
-          <p className="text-2xl font-bold text-gray-900">
-            {getPercentage(planned)}%
-          </p>
-
-          <p className="text-sm text-gray-600">
-            Planned
-          </p>
-
-        </div>
-
-
-
-        <div>
-
-          <p className="text-2xl font-bold text-gray-900">
-            {getPercentage(ongoing)}%
-          </p>
-
-          <p className="text-sm text-gray-600">
-            Ongoing
-          </p>
-
-        </div>
-
-
-
-        <div>
-
-          <p className="text-2xl font-bold text-gray-900">
-            {getPercentage(completed)}%
-          </p>
-
-          <p className="text-sm text-gray-600">
-            Completed
-          </p>
-
-        </div>
-
-
-      </div>
-
+      </ResponsiveContainer>
 
     </div>
+
   );
 }
