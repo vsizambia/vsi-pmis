@@ -7,9 +7,14 @@ datasource db {
 }
 
 model Role {
-  id   String @id @default(cuid())
-  code String @unique
-  name String @unique
+  id String @id @default(cuid())
+
+  code        String  @unique
+  name        String  @unique
+  description String?
+
+  isSystem Boolean @default(false)
+  isActive Boolean @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -18,10 +23,14 @@ model Role {
 }
 
 model Directorate {
-  id          String  @id @default(cuid())
+  id String @id @default(cuid())
+
   code        String  @unique
   name        String  @unique
   description String?
+
+  displayOrder Int     @default(1)
+  isActive     Boolean @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -31,10 +40,16 @@ model Directorate {
 }
 
 model User {
-  id       String @id @default(cuid())
+  id String @id @default(cuid())
+
   name     String
   email    String @unique
   password String
+
+  designation String?
+  phone       String?
+
+  isActive Boolean @default(true)
 
   roleId        String
   directorateId String?
