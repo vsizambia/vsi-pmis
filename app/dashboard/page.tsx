@@ -29,6 +29,9 @@ export default async function DashboardPage() {
     prisma.directorate.count(),
 
     prisma.programme.findMany({
+      include: {
+        directorate: true,
+      },
       orderBy: {
         name: "asc",
       },
@@ -67,19 +70,38 @@ export default async function DashboardPage() {
     }),
   ]);
 
+
+  const dashboardActivities = recentActivities.map((activity) => ({
+    id: activity.id,
+    name: activity.project.name,
+    status: activity.status,
+    createdAt: activity.createdAt,
+    project: activity.project,
+  }));
+
+
   const plannedProjects = projects.filter(
     (project) => project.status === "PLANNED"
   ).length;
+
 
   const ongoingProjects = projects.filter(
     (project) => project.status === "ONGOING"
   ).length;
 
+
   const completedProjects = projects.filter(
     (project) => project.status === "COMPLETED"
   ).length;
 
-  const projectStatus = [
+
+  const programmeProgressData = programmeProgress.map((programme) => ({
+    name: programme.name,
+    projects: programme.projects.length,
+  }));
+
+
+  const projectSummary = [
     {
       name: "Planned",
       value: plannedProjects,
@@ -97,14 +119,12 @@ export default async function DashboardPage() {
     },
   ];
 
-  const programmeProgressData = programmeProgress.map((programme) => ({
-    name: programme.name,
-    projects: programme.projects.length,
-  }));
 
   return (
     <main className="space-y-8">
+
       <section className="flex flex-col gap-6 rounded-2xl border border-slate-200 bg-white p-8 shadow-sm lg:flex-row lg:items-center lg:justify-between">
+
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">
             VSI Programme Management Dashboard
@@ -116,13 +136,16 @@ export default async function DashboardPage() {
           </p>
         </div>
 
+
         <div className="flex flex-wrap gap-3">
+
           <Link
             href="/projects/new"
             className="rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700"
           >
             + New Project
           </Link>
+
 
           <Link
             href="/activities/new"
@@ -131,14 +154,18 @@ export default async function DashboardPage() {
             + New Activity
           </Link>
 
+
           <Link
             href="/reports"
             className="rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
           >
             Reports
           </Link>
+
         </div>
+
       </section>
+
 
       <DashboardStats
         directorates={directorates}
@@ -149,8 +176,11 @@ export default async function DashboardPage() {
         indicators={indicators}
       />
 
+
       <section className="grid gap-6 xl:grid-cols-3">
+
         <div className="xl:col-span-2 rounded-xl border bg-white p-6 shadow-sm">
+
           <h2 className="mb-2 text-2xl font-bold text-slate-900">
             Project Status
           </h2>
@@ -159,23 +189,32 @@ export default async function DashboardPage() {
             Current distribution of projects by implementation status
           </p>
 
+
           <ProjectStatusChart
             planned={plannedProjects}
             ongoing={ongoingProjects}
             completed={completedProjects}
           />
+
         </div>
 
+
         <QuickActions />
+
       </section>
+
 
       <section className="grid gap-6 xl:grid-cols-2">
+
         <RecentProjects projects={projects} />
 
-        <RecentActivities activities={recentActivities} />
+        <RecentActivities activities={dashboardActivities} />
+
       </section>
 
+
       <section className="rounded-xl border bg-white p-6 shadow-sm">
+
         <h2 className="mb-2 text-2xl font-bold text-slate-900">
           Project Distribution by Programme
         </h2>
@@ -184,12 +223,16 @@ export default async function DashboardPage() {
           Number of projects assigned to each programme
         </p>
 
+
         <ProgrammeProgressChart
           data={programmeProgressData}
         />
+
       </section>
 
+
       <section className="rounded-xl border bg-white p-6 shadow-sm">
+
         <h2 className="mb-2 text-2xl font-bold text-slate-900">
           Programme Portfolio
         </h2>
@@ -198,16 +241,23 @@ export default async function DashboardPage() {
           Overview of registered programmes
         </p>
 
+
         <ProgrammeSummary programmes={programmes} />
+
       </section>
 
+
       <section className="rounded-xl border bg-white p-6 shadow-sm">
+
         <h2 className="mb-4 text-2xl font-bold text-slate-900">
           Project Summary
         </h2>
 
+
         <div className="space-y-4">
-          {projectStatus.map((item) => {
+
+          {projectSummary.map((item) => {
+
             const Icon = item.icon;
 
             return (
@@ -215,22 +265,31 @@ export default async function DashboardPage() {
                 key={item.name}
                 className="flex items-center justify-between rounded-lg bg-slate-50 p-4"
               >
+
                 <div className="flex items-center gap-3">
+
                   <Icon className="h-5 w-5 text-slate-600" />
 
                   <span className="font-medium text-slate-700">
                     {item.name}
                   </span>
+
                 </div>
+
 
                 <span className="text-xl font-bold text-slate-900">
                   {item.value}
                 </span>
+
               </div>
             );
+
           })}
+
         </div>
+
       </section>
+
     </main>
   );
 }

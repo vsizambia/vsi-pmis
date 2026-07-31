@@ -5,7 +5,19 @@ export async function GET() {
   try {
     const programmes = await prisma.programme.findMany({
       include: {
-        directorate: true,
+        directorate: {
+          select: {
+            id: true,
+            code: true,
+            name: true,
+          },
+        },
+        _count: {
+          select: {
+            projects: true,
+            indicators: true,
+          },
+        },
       },
       orderBy: {
         createdAt: "desc",
@@ -36,14 +48,27 @@ export async function POST(request: Request) {
 
     const programme = await prisma.programme.create({
       data: {
+        code: body.code || null,
         name: body.name,
-        description: body.description,
+        theme: body.theme || null,
+        description: body.description || null,
+        status: body.status || "ACTIVE",
         startYear: Number(body.startYear),
         endYear: Number(body.endYear),
+        budgetCeiling: body.budgetCeiling
+          ? Number(body.budgetCeiling)
+          : null,
+        currency: body.currency || "ZMW",
         directorateId: body.directorateId,
       },
       include: {
-        directorate: true,
+        directorate: {
+          select: {
+            id: true,
+            code: true,
+            name: true,
+          },
+        },
       },
     });
 
