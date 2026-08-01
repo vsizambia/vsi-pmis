@@ -86,7 +86,7 @@ export default async function DashboardPage() {
 
 
   const ongoingProjects = projects.filter(
-    (project) => project.status === "ONGOING"
+   (project) => project.status === "ACTIVE"
   ).length;
 
 

@@ -100,7 +100,7 @@ model Project {
   name        String  @unique
   description String?
 
-  status String @default("PLANNED")
+  status ProjectStatus @default(PLANNED)
 
   priority ProjectPriority @default(MEDIUM)
 
@@ -117,8 +117,7 @@ model Project {
   startDate DateTime?
   endDate   DateTime?
 
-  programmeId String
-
+  programmeId      String
   projectManagerId String?
 
   createdAt DateTime @default(now())
@@ -128,13 +127,103 @@ model Project {
 
   projectManager User? @relation("ProjectManager", fields: [projectManagerId], references: [id])
 
-  activities Activity[]
-
+  activities    Activity[]
   beneficiaries Beneficiary[]
+  locations     ProjectLocation[]
+  indicators    Indicator[]
 
-  locations ProjectLocation[]
+  milestones ProjectMilestone[]
+  risks      ProjectRisk[]
+  issues     ProjectIssue[]
+  updates    ProjectUpdate[]
+}
 
-  indicators Indicator[]
+model ProjectMilestone {
+  id String @id @default(cuid())
+
+  projectId String
+
+  name        String
+  description String?
+
+  dueDate DateTime
+
+  status String @default("PENDING")
+
+  progress Float @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+}
+
+model ProjectRisk {
+  id String @id @default(cuid())
+
+  projectId String
+
+  title       String
+  description String?
+
+  probability String
+  impact      String
+
+  mitigation String?
+
+  status String @default("OPEN")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+}
+
+model ProjectIssue {
+  id String @id @default(cuid())
+
+  projectId String
+
+  title       String
+  description String?
+
+  priority String @default("MEDIUM")
+
+  status String @default("OPEN")
+
+  resolution String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+}
+
+model ProjectUpdate {
+  id String @id @default(cuid())
+
+  projectId String
+
+  reportDate DateTime
+
+  progress Float @default(0)
+
+  achievements String?
+  challenges   String?
+  nextSteps    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
 }
 
 model ProjectLocation {
@@ -205,13 +294,14 @@ model Indicator {
   achieved String?
 
   programmeId String
+  projectId   String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   programme Programme @relation(fields: [programmeId], references: [id], onDelete: Cascade)
-  project   Project?  @relation(fields: [projectId], references: [id])
-  projectId String?
+
+  project Project? @relation(fields: [projectId], references: [id])
 }
 
 enum ProgrammeStatus {
