@@ -2,80 +2,115 @@ import prisma from "../lib/prisma";
 import bcrypt from "bcryptjs";
 
 async function main() {
-  console.log("🌱 Starting VSI-PMIS database seed...");
-// =====================================================
-// ROLES
-// =====================================================
+  console.log("🌱 Starting VSI-PMIS Enterprise seed...");
 
-const administratorRole = await prisma.role.upsert({
-  where: { name: "Administrator" },
-  update: {
-    code: "ADMIN",
-  },
-  create: {
-    name: "Administrator",
-    code: "ADMIN",
-  },
-});
-
-const executiveDirectorRole = await prisma.role.upsert({
-  where: { name: "Executive Director" },
-  update: {
-    code: "EXEC_DIR",
-  },
-  create: {
-    name: "Executive Director",
-    code: "EXEC_DIR",
-  },
-});
-
-const programmeManagerRole = await prisma.role.upsert({
-  where: { name: "Programme Manager" },
-  update: {
-    code: "PROG_MGR",
-  },
-  create: {
-    name: "Programme Manager",
-    code: "PROG_MGR",
-  },
-});
-
-const financeOfficerRole = await prisma.role.upsert({
-  where: { name: "Finance Officer" },
-  update: {
-    code: "FIN_OFF",
-  },
-  create: {
-    name: "Finance Officer",
-    code: "FIN_OFF",
-  },
-});
-
-const meOfficerRole = await prisma.role.upsert({
-  where: { name: "Monitoring & Evaluation Officer" },
-  update: {
-    code: "ME_OFF",
-  },
-  create: {
-    name: "Monitoring & Evaluation Officer",
-    code: "ME_OFF",
-  },
-});
-
-const volunteerRole = await prisma.role.upsert({
-  where: { name: "Volunteer" },
-  update: {
-    code: "VOL",
-  },
-  create: {
-    name: "Volunteer",
-    code: "VOL",
-  },
-});
-
-console.log("✅ Roles seeded.");
   // =====================================================
-  // ADMINISTRATOR
+  // ROLES
+  // =====================================================
+
+  const roles = [
+    ["ADMIN", "Administrator"],
+    ["EXEC_DIR", "Executive Director"],
+    ["PROG_DIR", "Programme Director"],
+    ["PROG_MGR", "Programme Manager"],
+    ["MEAL_MGR", "MEAL Manager"],
+    ["FIN_MGR", "Finance Manager"],
+    ["HR_ADMIN", "Human Resources Administrator"],
+    ["PROC_OFF", "Procurement Officer"],
+    ["COMM_OFF", "Communications Officer"],
+    ["PROJECT_OFF", "Project Officer"],
+    ["RESEARCH_OFF", "Research Officer"],
+    ["VOL_COORD", "Volunteer Coordinator"],
+    ["ICT_ADMIN", "ICT Administrator"],
+    ["LEGAL_OFF", "Legal and Compliance Officer"],
+    ["VOL", "Volunteer"],
+  ];
+
+  const roleMap: Record<string, string> = {};
+
+  for (const [code, name] of roles) {
+    const role = await prisma.role.upsert({
+      where: { name },
+      update: { code },
+      create: {
+        code,
+        name,
+      },
+    });
+
+    roleMap[code] = role.id;
+  }
+
+  console.log("✅ Roles seeded.");
+
+  // =====================================================
+  // DIRECTORATES
+  // =====================================================
+
+  const directorates = [
+    {
+      code: "EXECDIR",
+      name: "Executive Director's Office",
+      description:
+        "Provides strategic leadership, governance oversight and organisational direction.",
+    },
+    {
+      code: "PROGRAMMES",
+      name: "Directorate of Programmes",
+      description:
+        "Responsible for programme design, implementation and delivery.",
+    },
+    {
+      code: "POLICY",
+      name: "Directorate of Policy, Advocacy and Research",
+      description:
+        "Responsible for research, policy analysis and advocacy.",
+    },
+    {
+      code: "MEAL",
+      name: "Directorate of Monitoring, Evaluation, Accountability and Learning",
+      description:
+        "Responsible for monitoring, evaluation, accountability and organisational learning.",
+    },
+    {
+      code: "FINADMIN",
+      name: "Directorate of Finance and Administration",
+      description:
+        "Responsible for finance, procurement, ICT, HR and administration.",
+    },
+    {
+      code: "COMMS",
+      name: "Directorate of Communications and Resource Mobilisation",
+      description:
+        "Responsible for communications, branding, partnerships and fundraising.",
+    },
+    {
+      code: "LEGAL",
+      name: "Directorate of Legal and Compliance",
+      description:
+        "Responsible for legal affairs, compliance and risk management.",
+    },
+  ];
+
+  const directorateMap: Record<string, string> = {};
+
+  for (const item of directorates) {
+    const directorate = await prisma.directorate.upsert({
+      where: { name: item.name },
+      update: {
+        code: item.code,
+        description: item.description,
+      },
+      create: item,
+    });
+
+    directorateMap[item.code] = directorate.id;
+  }
+
+  console.log("✅ Directorates seeded.");
+
+  // =====================================================
+  // ADMIN USER
   // =====================================================
 
   const password = await bcrypt.hash("Admin@123", 10);
@@ -89,158 +124,75 @@ console.log("✅ Roles seeded.");
       name: "System Administrator",
       email: "admin@vsi.org.zm",
       password,
-      roleId: administratorRole.id,
+      roleId: roleMap.ADMIN,
+      directorateId: directorateMap.EXECDIR,
     },
   });
 
-  console.log("✅ Administrator account seeded.");
+  console.log("✅ Administrator seeded.");
 
-// =====================================================
-// DIRECTORATES
-// =====================================================
-
-const programmesDirectorate = await prisma.directorate.upsert({
-  where: { name: "Directorate of Programmes" },
-  update: {
-    code: "PROGRAMMES",
-  },
-  create: {
-    name: "Directorate of Programmes",
-    code: "PROGRAMMES",
-    description:
-      "Responsible for programme design, implementation, monitoring, partnerships and delivery.",
-  },
-});
-
-const policyDirectorate = await prisma.directorate.upsert({
-  where: { name: "Directorate of Policy, Advocacy and Research" },
-  update: {
-    code: "POLICY",
-  },
-  create: {
-    name: "Directorate of Policy, Advocacy and Research",
-    code: "POLICY",
-    description:
-      "Responsible for policy analysis, advocacy, research and knowledge management.",
-  },
-});
-
-const financeDirectorate = await prisma.directorate.upsert({
-  where: { name: "Directorate of Finance and Administration" },
-  update: {
-    code: "FINADMIN",
-  },
-  create: {
-    name: "Directorate of Finance and Administration",
-    code: "FINADMIN",
-    description:
-      "Responsible for finance, administration, procurement, ICT, logistics and human resources.",
-  },
-});
-
-const mealDirectorate = await prisma.directorate.upsert({
-  where: { name: "Directorate of Monitoring, Evaluation, Accountability and Learning" },
-  update: {
-    code: "MEAL",
-  },
-  create: {
-    name: "Directorate of Monitoring, Evaluation, Accountability and Learning",
-    code: "MEAL",
-    description:
-      "Responsible for monitoring, evaluation, accountability, learning and organisational performance.",
-  },
-});
-
-const communicationsDirectorate = await prisma.directorate.upsert({
-  where: { name: "Directorate of Communications and Resource Mobilisation" },
-  update: {
-    code: "COMMS",
-  },
-  create: {
-    name: "Directorate of Communications and Resource Mobilisation",
-    code: "COMMS",
-    description:
-      "Responsible for communications, branding, media relations, partnerships and resource mobilisation.",
-  },
-});
-
-const legalDirectorate = await prisma.directorate.upsert({
-  where: { name: "Directorate of Legal and Compliance" },
-  update: {
-    code: "LEGAL",
-  },
-  create: {
-    name: "Directorate of Legal and Compliance",
-    code: "LEGAL",
-    description:
-      "Responsible for legal affairs, governance, compliance, risk management and policy oversight.",
-  },
-});
-
-console.log("✅ Directorates seeded.");
-    // =====================================================
+  // =====================================================
   // PROGRAMMES
   // =====================================================
 
-  const civicProgramme = await prisma.programme.upsert({
-    where: {
+  const programmes = [
+    {
+      code: "CLDG",
       name: "Civic Leadership and Democratic Governance Programme",
-    },
-    update: {},
-    create: {
-      name: "Civic Leadership and Democratic Governance Programme",
+      theme: "Youth leadership and democratic participation",
       description:
         "Preparing students for mental resilience and civic leadership.",
-      startYear: 2026,
-      endYear: 2030,
-      directorateId: programmesDirectorate.id,
     },
-  });
-
-  const youthProgramme = await prisma.programme.upsert({
-    where: {
-      name: "Youth Empowerment Programme",
-    },
-    update: {},
-    create: {
-      name: "Youth Empowerment Programme",
-      description:
-        "Promoting youth participation, entrepreneurship and skills development.",
-      startYear: 2026,
-      endYear: 2030,
-      directorateId: programmesDirectorate.id,
-    },
-  });
-
-  const mentalHealthProgramme = await prisma.programme.upsert({
-    where: {
+    {
+      code: "MHR",
       name: "Mental Health Resilience Programme",
-    },
-    update: {},
-    create: {
-      name: "Mental Health Resilience Programme",
+      theme: "Psychosocial wellbeing",
       description:
-        "Strengthening resilience and psychosocial wellbeing among young people.",
-      startYear: 2026,
-      endYear: 2030,
-      directorateId: programmesDirectorate.id,
+        "Strengthening mental resilience among young people.",
     },
-  });
-
-  const communityProgramme = await prisma.programme.upsert({
-    where: {
-      name: "Community Development Programme",
+    {
+      code: "YDP",
+      name: "Youth Development Programme",
+      theme: "Youth empowerment and skills development",
+      description:
+        "Promoting youth participation, entrepreneurship and innovation.",
     },
-    update: {},
-    create: {
+    {
+      code: "CDP",
       name: "Community Development Programme",
+      theme: "Community empowerment",
       description:
         "Supporting sustainable community development initiatives.",
-      startYear: 2026,
-      endYear: 2030,
-      directorateId: programmesDirectorate.id,
     },
-  });
+    {
+      code: "VMP",
+      name: "Volunteer Management Programme",
+      theme: "Volunteer mobilisation",
+      description:
+        "Recruiting and managing VSI volunteers.",
+    },
+  ];
+
+  const programmeMap: Record<string, string> = {};
+
+  for (const item of programmes) {
+    const programme = await prisma.programme.upsert({
+      where: { name: item.name },
+      update: {
+        code: item.code,
+        theme: item.theme,
+      },
+      create: {
+        ...item,
+        status: "ACTIVE",
+        startYear: 2026,
+        endYear: 2030,
+        directorateId: directorateMap.PROGRAMMES,
+      },
+    });
+
+    programmeMap[item.code] = programme.id;
+  }
 
   console.log("✅ Programmes seeded.");
 
@@ -250,59 +202,39 @@ console.log("✅ Directorates seeded.");
 
   const indicators = [
     {
-      programmeId: civicProgramme.id,
+      code: "CLDG-IND-001",
       name: "Students Trained",
+      unit: "Students",
+      programmeId: programmeMap.CLDG,
       baseline: "0",
       target: "10000",
       achieved: "0",
     },
     {
-      programmeId: civicProgramme.id,
+      code: "CLDG-IND-002",
       name: "Schools Reached",
+      unit: "Schools",
+      programmeId: programmeMap.CLDG,
       baseline: "0",
       target: "200",
       achieved: "0",
     },
     {
-      programmeId: youthProgramme.id,
-      name: "Youth Empowered",
-      baseline: "0",
-      target: "5000",
-      achieved: "0",
-    },
-    {
-      programmeId: youthProgramme.id,
-      name: "Youth Clubs Established",
-      baseline: "0",
-      target: "100",
-      achieved: "0",
-    },
-    {
-      programmeId: mentalHealthProgramme.id,
+      code: "MHR-IND-001",
       name: "Mental Health Sessions Conducted",
+      unit: "Sessions",
+      programmeId: programmeMap.MHR,
       baseline: "0",
       target: "300",
       achieved: "0",
     },
     {
-      programmeId: mentalHealthProgramme.id,
-      name: "Counsellors Trained",
+      code: "YDP-IND-001",
+      name: "Youth Empowered",
+      unit: "Youth",
+      programmeId: programmeMap.YDP,
       baseline: "0",
-      target: "150",
-      achieved: "0",
-    },
-    {
-      programmeId: communityProgramme.id,
-      name: "Community Projects Implemented",
-      baseline: "0",
-      target: "50",
-      achieved: "0",
-    },
-    {
-      programmeId: communityProgramme.id,
-      name: "Community Members Reached",
-      baseline: "0",
-      target: "50000",
+      target: "5000",
       achieved: "0",
     },
   ];
@@ -312,240 +244,102 @@ console.log("✅ Directorates seeded.");
       where: {
         name: indicator.name,
       },
-      update: {
-        baseline: indicator.baseline,
-        target: indicator.target,
-        achieved: indicator.achieved,
-        programmeId: indicator.programmeId,
-      },
+      update: indicator,
       create: indicator,
     });
   }
 
   console.log("✅ Indicators seeded.");
-    // =====================================================
+
+  // =====================================================
   // PROJECTS
   // =====================================================
 
-  const projectDefinitions = [
+  const projects = [
     {
-      programme: civicProgramme,
+      referenceNo: "VSI-2026-001",
+      code: "CLDG-001",
       name: "Mental Resilience in Secondary Schools",
-      description:
-        "Training learners in civic leadership and mental resilience.",
+      programmeId: programmeMap.CLDG,
       budget: 150000,
-      status: "Ongoing",
-      startDate: new Date("2026-01-01"),
-      endDate: new Date("2026-12-31"),
+      donor: "VSI",
+      fundingSource: "Internal Funding",
     },
     {
-      programme: youthProgramme,
-      name: "Youth Innovation and Entrepreneurship",
-      description:
-        "Supporting entrepreneurship and innovation among young people.",
-      budget: 225000,
-      status: "Planned",
-      startDate: new Date("2026-02-01"),
-      endDate: new Date("2026-11-30"),
+      referenceNo: "VSI-2026-002",
+      code: "VSIACA-001",
+      name: "VSI Academy Centre of Leadership Excellence",
+      programmeId: programmeMap.CLDG,
+      budget: 5000000,
+      donor: "Strategic Partners",
+      fundingSource: "Capital Development",
     },
     {
-      programme: mentalHealthProgramme,
+      referenceNo: "VSI-2026-003",
+      code: "MHR-001",
       name: "School Mental Health Initiative",
-      description:
-        "Strengthening mental health services in secondary schools.",
+      programmeId: programmeMap.MHR,
       budget: 180000,
-      status: "Ongoing",
-      startDate: new Date("2026-03-01"),
-      endDate: new Date("2026-12-15"),
+      donor: "Partners",
+      fundingSource: "Grant",
     },
     {
-      programme: communityProgramme,
-      name: "Community Volunteer Mobilisation",
-      description:
-        "Mobilising volunteers for sustainable community development.",
-      budget: 120000,
-      status: "Planned",
-      startDate: new Date("2026-04-01"),
-      endDate: new Date("2026-10-31"),
+      referenceNo: "VSI-2026-004",
+      code: "YDP-001",
+      name: "Youth Innovation and Entrepreneurship",
+      programmeId: programmeMap.YDP,
+      budget: 225000,
+      donor: "Partners",
+      fundingSource: "Grant",
     },
   ];
 
- const projects: Awaited<ReturnType<typeof prisma.project.upsert>>[] = [];
+  const projectIds: string[] = [];
 
-  for (const item of projectDefinitions) {
+  for (const item of projects) {
     const project = await prisma.project.upsert({
       where: {
         name: item.name,
       },
-      update: {
-        description: item.description,
-        budget: item.budget,
-        currency: "ZMW",
-        status: item.status,
-        startDate: item.startDate,
-        endDate: item.endDate,
-        programmeId: item.programme.id,
-        projectManagerId: administrator.id,
-      },
+      update: item,
       create: {
-        name: item.name,
-        description: item.description,
-        budget: item.budget,
+        ...item,
+        status: "ACTIVE",
+        priority: "HIGH",
+        riskLevel: "MEDIUM",
+        progress: 0,
         currency: "ZMW",
-        status: item.status,
-        startDate: item.startDate,
-        endDate: item.endDate,
-        programmeId: item.programme.id,
         projectManagerId: administrator.id,
       },
     });
 
-    projects.push(project);
+    projectIds.push(project.id);
   }
 
   console.log("✅ Projects seeded.");
 
   // =====================================================
-  // PROJECT LOCATIONS
-  // =====================================================
-
-  for (const project of projects) {
-    const exists = await prisma.projectLocation.findFirst({
-      where: {
-        projectId: project.id,
-      },
-    });
-
-    if (!exists) {
-      await prisma.projectLocation.create({
-        data: {
-          projectId: project.id,
-          country: "Zambia",
-          province: "Lusaka",
-          district: "Lusaka",
-        },
-      });
-    }
-  }
-
-  console.log("✅ Project locations seeded.");
-
-  // =====================================================
-  // ACTIVITIES
-  // =====================================================
-
-  for (const project of projects) {
-    const titles = [
-      "Project Launch",
-      "Stakeholder Meeting",
-      "Capacity Building Workshop",
-      "Field Monitoring Visit",
-      "Project Evaluation",
-    ];
-
-    for (const title of titles) {
-      const exists = await prisma.activity.findFirst({
-        where: {
-          projectId: project.id,
-          title,
-        },
-      });
-
-      if (!exists) {
-        await prisma.activity.create({
-          data: {
-            title,
-            description: `${title} for ${project.name}`,
-            status: "Planned",
-            startDate: new Date("2026-08-01"),
-            endDate: new Date("2026-08-02"),
-            projectId: project.id,
-          },
-        });
-      }
-    }
-  }
-
-  console.log("✅ Activities seeded.");
-
-  // =====================================================
-  // BENEFICIARIES
-  // =====================================================
-
-  for (const project of projects) {
-    const exists = await prisma.beneficiary.findFirst({
-      where: {
-        projectId: project.id,
-      },
-    });
-
-    if (!exists) {
-      await prisma.beneficiary.create({
-        data: {
-          projectId: project.id,
-          gender: "Mixed",
-          age: 17,
-          ageGroup: "Children (0-17)",
-          number: 500,
-        },
-      });
-    }
-  }
-
-  console.log("✅ Beneficiaries seeded.");
-    // =====================================================
   // SUMMARY
   // =====================================================
 
-  const [
-    roleCount,
-    userCount,
-    directorateCount,
-    programmeCount,
-    indicatorCount,
-    projectCount,
-    activityCount,
-    beneficiaryCount,
-    locationCount,
-  ] = await Promise.all([
-    prisma.role.count(),
-    prisma.user.count(),
-    prisma.directorate.count(),
-    prisma.programme.count(),
-    prisma.indicator.count(),
-    prisma.project.count(),
-    prisma.activity.count(),
-    prisma.beneficiary.count(),
-    prisma.projectLocation.count(),
-  ]);
-
   console.log("");
   console.log("===========================================");
-  console.log("🎉 VSI-PMIS DATABASE SEEDED SUCCESSFULLY");
+  console.log("🎉 VSI-PMIS ENTERPRISE SEED COMPLETE");
   console.log("===========================================");
-  console.log(`Roles           : ${roleCount}`);
-  console.log(`Users           : ${userCount}`);
-  console.log(`Directorates    : ${directorateCount}`);
-  console.log(`Programmes      : ${programmeCount}`);
-  console.log(`Indicators      : ${indicatorCount}`);
-  console.log(`Projects        : ${projectCount}`);
-  console.log(`Activities      : ${activityCount}`);
-  console.log(`Beneficiaries   : ${beneficiaryCount}`);
-  console.log(`Locations       : ${locationCount}`);
+  console.log(`Roles        : ${await prisma.role.count()}`);
+  console.log(`Directorates : ${await prisma.directorate.count()}`);
+  console.log(`Programmes   : ${await prisma.programme.count()}`);
+  console.log(`Indicators   : ${await prisma.indicator.count()}`);
+  console.log(`Projects     : ${await prisma.project.count()}`);
   console.log("===========================================");
-  console.log("");
-  console.log("Administrator Account");
-  console.log("---------------------");
-  console.log("Email    : admin@vsi.org.zm");
-  console.log("Password : Admin@123");
-  console.log("");
-  console.log("🌱 Seed completed successfully.");
+  console.log("Admin Login");
+  console.log("Email: admin@vsi.org.zm");
+  console.log("Password: Admin@123");
 }
 
 main()
   .catch((error) => {
-    console.error("");
-    console.error("❌ Database seeding failed.");
+    console.error("❌ Seed failed.");
     console.error(error);
     process.exit(1);
   })

@@ -7,9 +7,14 @@ datasource db {
 }
 
 model Role {
-  id   String @id @default(cuid())
-  code String @unique
-  name String @unique
+  id String @id @default(cuid())
+
+  code        String? @unique
+  name        String  @unique
+  description String?
+
+  isSystem Boolean @default(false)
+  isActive Boolean @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -18,10 +23,14 @@ model Role {
 }
 
 model Directorate {
-  id          String  @id @default(cuid())
-  code        String  @unique
+  id String @id @default(cuid())
+
+  code        String? @unique
   name        String  @unique
   description String?
+
+  displayOrder Int     @default(1)
+  isActive     Boolean @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -31,10 +40,16 @@ model Directorate {
 }
 
 model User {
-  id       String @id @default(cuid())
+  id String @id @default(cuid())
+
   name     String
   email    String @unique
   password String
+
+  designation String?
+  phone       String?
+
+  isActive Boolean @default(true)
 
   roleId        String
   directorateId String?
@@ -49,12 +64,21 @@ model User {
 }
 
 model Programme {
-  id          String  @id @default(cuid())
-  name        String  @unique
+  id String @id @default(cuid())
+
+  code String? @unique
+  name String  @unique
+
+  theme       String?
   description String?
+
+  status String @default("ACTIVE")
 
   startYear Int
   endYear   Int
+
+  budgetCeiling Float?
+  currency      String @default("ZMW")
 
   directorateId String
 
@@ -68,30 +92,49 @@ model Programme {
 }
 
 model Project {
-  id          String  @id @default(cuid())
+  id String @id @default(cuid())
+
+  referenceNo String? @unique
+  code        String? @unique
+
   name        String  @unique
   description String?
 
-  startDate DateTime?
-  endDate   DateTime?
+  status String @default("PLANNED")
 
-  status String @default("Planned")
+  priority ProjectPriority @default(MEDIUM)
+
+  riskLevel RiskLevel @default(LOW)
+
+  progress Float @default(0)
 
   budget   Float?
   currency String @default("ZMW")
 
-  programmeId      String
+  fundingSource String?
+  donor         String?
+
+  startDate DateTime?
+  endDate   DateTime?
+
+  programmeId String
+
   projectManagerId String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  programme      Programme @relation(fields: [programmeId], references: [id], onDelete: Cascade)
-  projectManager User?     @relation("ProjectManager", fields: [projectManagerId], references: [id])
+  programme Programme @relation(fields: [programmeId], references: [id], onDelete: Cascade)
 
-  activities    Activity[]
+  projectManager User? @relation("ProjectManager", fields: [projectManagerId], references: [id])
+
+  activities Activity[]
+
   beneficiaries Beneficiary[]
-  locations     ProjectLocation[]
+
+  locations ProjectLocation[]
+
+  indicators Indicator[]
 }
 
 model ProjectLocation {
@@ -128,15 +171,19 @@ model Beneficiary {
 model Activity {
   id String @id @default(cuid())
 
+  code String? @unique
+
   title       String
   description String?
 
-  projectId String
+  status String @default("PLANNED")
+
+  progress Float @default(0)
 
   startDate DateTime?
   endDate   DateTime?
 
-  status String @default("Planned")
+  projectId String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -147,7 +194,11 @@ model Activity {
 model Indicator {
   id String @id @default(cuid())
 
+  code String? @unique
+
   name String @unique
+
+  unit String?
 
   baseline String?
   target   String?
@@ -159,4 +210,37 @@ model Indicator {
   updatedAt DateTime @updatedAt
 
   programme Programme @relation(fields: [programmeId], references: [id], onDelete: Cascade)
+  project   Project?  @relation(fields: [projectId], references: [id])
+  projectId String?
+}
+
+enum ProgrammeStatus {
+  ACTIVE
+  INACTIVE
+  COMPLETED
+  SUSPENDED
+}
+
+enum ProjectStatus {
+  PLANNED
+  APPROVED
+  ACTIVE
+  SUSPENDED
+  COMPLETED
+  CLOSED
+  CANCELLED
+}
+
+enum ProjectPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
 }

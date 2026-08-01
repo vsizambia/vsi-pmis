@@ -41,3 +41,20 @@ yarn-error.log*
 next-env.d.ts
 
 /lib/generated/prisma
+# Vim swap files
+*.swp
+*.swo
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
+
+# Environment files
+.env
+.env.local
+
+# Prisma
+prisma/dev.db
+prisma/dev.db-journal
