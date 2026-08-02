@@ -3,6 +3,8 @@ import prisma from "@/lib/prisma";
 import ProjectStatusChart from "@/components/monitoring/ProjectStatusChart";
 import RiskProfileChart from "@/components/monitoring/RiskProfileChart";
 import ProgressOverview from "@/components/monitoring/ProgressOverview";
+import ProjectStatusDetails from "@/components/monitoring/ProjectStatusDetails";
+import RiskProfileDetails from "@/components/monitoring/RiskProfileDetails";
 
 export default async function MonitoringPage() {
   const [
@@ -19,6 +21,7 @@ export default async function MonitoringPage() {
     progressData,
     topProjects,
     lowestProjects,
+    monitoringProjects,
   ] = await Promise.all([
     prisma.project.count(),
 
@@ -108,6 +111,19 @@ export default async function MonitoringPage() {
         progress: true,
       },
     }),
+
+    prisma.project.findMany({
+      orderBy: {
+        progress: "desc",
+      },
+      select: {
+        id: true,
+        name: true,
+        status: true,
+        progress: true,
+        riskLevel: true,
+      },
+    }),
   ]);
 
   const cards = [
@@ -141,14 +157,12 @@ export default async function MonitoringPage() {
     },
     {
       title: "Total Budget",
-      value: `ZMW ${budgetData._sum.budget?.toLocaleString() ?? 0}`,
+      value: `ZMW ${
+        budgetData._sum.budget?.toLocaleString() ?? 0
+      }`,
     },
   ];
 
-  /**
-   * Normalize project status data.
-   * Ensures empty statuses still appear on the dashboard.
-   */
   const statusChartData = [
     "ACTIVE",
     "PLANNED",
@@ -166,7 +180,7 @@ export default async function MonitoringPage() {
   });
 
   const riskChartData = riskData.map((item) => ({
-    level: item.riskLevel ?? "UNKNOWN",
+    level: item.riskLevel ?? "LOW",
     count: item._count.riskLevel,
   }));
 
@@ -186,8 +200,8 @@ export default async function MonitoringPage() {
         </h1>
 
         <p className="mt-2 text-gray-600">
-          Enterprise monitoring of projects, results, activities,
-          risks and beneficiaries.
+          Enterprise monitoring of projects, results,
+          activities, risks and beneficiaries.
         </p>
       </section>
 
@@ -215,6 +229,16 @@ export default async function MonitoringPage() {
 
         <RiskProfileChart
           data={riskChartData}
+        />
+      </section>
+
+      <section className="grid gap-6 lg:grid-cols-2">
+        <ProjectStatusDetails
+          projects={monitoringProjects}
+        />
+
+        <RiskProfileDetails
+          projects={monitoringProjects}
         />
       </section>
 
