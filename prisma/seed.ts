@@ -1,5 +1,11 @@
 import prisma from "../lib/prisma";
 import bcrypt from "bcryptjs";
+import {
+  ProgrammeStatus,
+  ProjectStatus,
+  ProjectPriority,
+  RiskLevel,
+} from "@prisma/client";
 
 async function main() {
   console.log("🌱 Starting VSI-PMIS Enterprise seed...");
@@ -175,24 +181,26 @@ async function main() {
 
   const programmeMap: Record<string, string> = {};
 
-  for (const item of programmes) {
-    const programme = await prisma.programme.upsert({
-      where: { name: item.name },
-      update: {
-        code: item.code,
-        theme: item.theme,
-      },
-      create: {
-        ...item,
-        status: "ACTIVE",
-        startYear: 2026,
-        endYear: 2030,
-        directorateId: directorateMap.PROGRAMMES,
-      },
-    });
+for (const item of programmes) {
+  const programme = await prisma.programme.upsert({
+    where: {
+      name: item.name,
+    },
+    update: {
+      code: item.code,
+      theme: item.theme,
+    },
+    create: {
+      ...item,
+      status: ProgrammeStatus.ACTIVE,
+      startYear: 2026,
+      endYear: 2030,
+      directorateId: directorateMap.PROGRAMMES,
+    },
+  });
 
-    programmeMap[item.code] = programme.id;
-  }
+  programmeMap[item.code] = programme.id;
+}
 
   console.log("✅ Programmes seeded.");
 
@@ -256,68 +264,79 @@ async function main() {
   // =====================================================
 
   const projects = [
-    {
-      referenceNo: "VSI-2026-001",
-      code: "CLDG-001",
-      name: "Mental Resilience in Secondary Schools",
-      programmeId: programmeMap.CLDG,
-      budget: 150000,
-      donor: "VSI",
-      fundingSource: "Internal Funding",
+  {
+    referenceNo: "VSI-2026-001",
+    code: "CLDG-001",
+    name: "Mental Resilience in Secondary Schools",
+    programmeId: programmeMap.CLDG,
+    budget: 150000,
+    donor: "VSI",
+    fundingSource: "Internal Funding",
+    progress: 65,
+    riskLevel: RiskLevel.LOW,
+  },
+  {
+    referenceNo: "VSI-2026-002",
+    code: "VSIACA-001",
+    name: "VSI Academy Centre of Leadership Excellence",
+    programmeId: programmeMap.CLDG,
+    budget: 5000000,
+    donor: "Strategic Partners",
+    fundingSource: "Capital Development",
+    progress: 80,
+    riskLevel: RiskLevel.MEDIUM,
+  },
+  {
+    referenceNo: "VSI-2026-003",
+    code: "MHR-001",
+    name: "School Mental Health Initiative",
+    programmeId: programmeMap.MHR,
+    budget: 180000,
+    donor: "Partners",
+    fundingSource: "Grant",
+    progress: 45,
+   riskLevel: RiskLevel.HIGH,
+  },
+  {
+    referenceNo: "VSI-2026-004",
+    code: "YDP-001",
+    name: "Youth Innovation and Entrepreneurship",
+    programmeId: programmeMap.YDP,
+    budget: 225000,
+    donor: "Partners",
+    fundingSource: "Grant",
+    progress: 30,
+    riskLevel: RiskLevel.MEDIUM,
+  },
+];
+
+const projectIds: string[] = [];
+
+for (const item of projects) {
+  const project = await prisma.project.upsert({
+    where: {
+      name: item.name,
     },
-    {
-      referenceNo: "VSI-2026-002",
-      code: "VSIACA-001",
-      name: "VSI Academy Centre of Leadership Excellence",
-      programmeId: programmeMap.CLDG,
-      budget: 5000000,
-      donor: "Strategic Partners",
-      fundingSource: "Capital Development",
+    update: {
+      ...item,
+      status: ProjectStatus.ACTIVE,
+      priority: ProjectPriority.HIGH,
+      currency: "ZMW",
+      projectManagerId: administrator.id,
     },
-    {
-      referenceNo: "VSI-2026-003",
-      code: "MHR-001",
-      name: "School Mental Health Initiative",
-      programmeId: programmeMap.MHR,
-      budget: 180000,
-      donor: "Partners",
-      fundingSource: "Grant",
+    create: {
+      ...item,
+      status: ProjectStatus.ACTIVE,
+      priority: ProjectPriority.HIGH,
+      currency: "ZMW",
+      projectManagerId: administrator.id,
     },
-    {
-      referenceNo: "VSI-2026-004",
-      code: "YDP-001",
-      name: "Youth Innovation and Entrepreneurship",
-      programmeId: programmeMap.YDP,
-      budget: 225000,
-      donor: "Partners",
-      fundingSource: "Grant",
-    },
-  ];
+  });
 
-  const projectIds: string[] = [];
+  projectIds.push(project.id);
+}
 
-  for (const item of projects) {
-    const project = await prisma.project.upsert({
-      where: {
-        name: item.name,
-      },
-      update: item,
-      create: {
-        ...item,
-        status: "ACTIVE",
-        priority: "HIGH",
-        riskLevel: "MEDIUM",
-        progress: 0,
-        currency: "ZMW",
-        projectManagerId: administrator.id,
-      },
-    });
-
-    projectIds.push(project.id);
-  }
-
-  console.log("✅ Projects seeded.");
-
+console.log("✅ Projects seeded.");
   // =====================================================
   // SUMMARY
   // =====================================================

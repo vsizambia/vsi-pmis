@@ -7,301 +7,210 @@ datasource db {
 }
 
 model Role {
-  id String @id @default(cuid())
-
-  code        String? @unique
-  name        String  @unique
+  id          String   @id @default(cuid())
+  code        String?  @unique
+  name        String   @unique
   description String?
-
-  isSystem Boolean @default(false)
-  isActive Boolean @default(true)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  users User[]
+  isSystem    Boolean  @default(false)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  users       User[]
 }
 
 model Directorate {
-  id String @id @default(cuid())
-
-  code        String? @unique
-  name        String  @unique
-  description String?
-
-  displayOrder Int     @default(1)
-  isActive     Boolean @default(true)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  users      User[]
-  programmes Programme[]
+  id           String      @id @default(cuid())
+  code         String?     @unique
+  name         String      @unique
+  description  String?
+  displayOrder Int         @default(1)
+  isActive     Boolean     @default(true)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  users        User[]
+  programmes   Programme[]
 }
 
 model User {
-  id String @id @default(cuid())
-
-  name     String
-  email    String @unique
-  password String
-
-  designation String?
-  phone       String?
-
-  isActive Boolean @default(true)
-
-  roleId        String
-  directorateId String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  role        Role         @relation(fields: [roleId], references: [id])
-  directorate Directorate? @relation(fields: [directorateId], references: [id])
-
-  managedProjects Project[] @relation("ProjectManager")
+  id              String       @id @default(cuid())
+  name            String
+  email           String       @unique
+  password        String
+  designation     String?
+  phone           String?
+  isActive        Boolean      @default(true)
+  roleId          String
+  directorateId   String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  role            Role         @relation(fields: [roleId], references: [id])
+  directorate     Directorate? @relation(fields: [directorateId], references: [id])
+  managedProjects Project[]    @relation("ProjectManager")
 }
 
 model Programme {
-  id String @id @default(cuid())
-
-  code String? @unique
-  name String  @unique
-
-  theme       String?
-  description String?
-
-  status String @default("ACTIVE")
-
-  startYear Int
-  endYear   Int
-
+  id            String          @id @default(cuid())
+  code          String?         @unique
+  name          String          @unique
+  theme         String?
+  description   String?
+  status        ProgrammeStatus @default(ACTIVE)
+  startYear     Int
+  endYear       Int
   budgetCeiling Float?
-  currency      String @default("ZMW")
-
+  currency      String          @default("ZMW")
   directorateId String
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  directorate Directorate @relation(fields: [directorateId], references: [id], onDelete: Cascade)
-
-  projects   Project[]
-  indicators Indicator[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  directorate   Directorate     @relation(fields: [directorateId], references: [id], onDelete: Cascade)
+  projects      Project[]
+  indicators    Indicator[]
 }
 
 model Project {
-  id String @id @default(cuid())
-
-  referenceNo String? @unique
-  code        String? @unique
-
-  name        String  @unique
-  description String?
-
-  status ProjectStatus @default(PLANNED)
-
-  priority ProjectPriority @default(MEDIUM)
-
-  riskLevel RiskLevel @default(LOW)
-
-  progress Float @default(0)
-
-  budget   Float?
-  currency String @default("ZMW")
-
-  fundingSource String?
-  donor         String?
-
-  startDate DateTime?
-  endDate   DateTime?
-
+  id               String             @id @default(cuid())
+  referenceNo      String?            @unique
+  code             String?            @unique
+  name             String             @unique
+  description      String?
+  status           ProjectStatus      @default(PLANNED)
+  priority         ProjectPriority    @default(MEDIUM)
+  riskLevel        RiskLevel          @default(LOW)
+  progress         Float              @default(0)
+  budget           Float?
+  currency         String             @default("ZMW")
+  fundingSource    String?
+  donor            String?
+  startDate        DateTime?
+  endDate          DateTime?
   programmeId      String
   projectManagerId String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  programme Programme @relation(fields: [programmeId], references: [id], onDelete: Cascade)
-
-  projectManager User? @relation("ProjectManager", fields: [projectManagerId], references: [id])
-
-  activities    Activity[]
-  beneficiaries Beneficiary[]
-  locations     ProjectLocation[]
-  indicators    Indicator[]
-
-  milestones ProjectMilestone[]
-  risks      ProjectRisk[]
-  issues     ProjectIssue[]
-  updates    ProjectUpdate[]
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  programme        Programme          @relation(fields: [programmeId], references: [id], onDelete: Cascade)
+  projectManager   User?              @relation("ProjectManager", fields: [projectManagerId], references: [id])
+  activities       Activity[]
+  beneficiaries    Beneficiary[]
+  locations        ProjectLocation[]
+  indicators       Indicator[]
+  milestones       ProjectMilestone[]
+  risks            ProjectRisk[]
+  issues           ProjectIssue[]
+  updates          ProjectUpdate[]
 }
 
 model ProjectMilestone {
-  id String @id @default(cuid())
-
-  projectId String
-
+  id          String   @id @default(cuid())
+  projectId   String
   name        String
   description String?
-
-  dueDate DateTime
-
-  status String @default("PENDING")
-
-  progress Float @default(0)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  dueDate     DateTime
+  status      String   @default("PENDING")
+  progress    Float    @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@index([projectId])
 }
 
 model ProjectRisk {
-  id String @id @default(cuid())
-
-  projectId String
-
+  id          String   @id @default(cuid())
+  projectId   String
   title       String
   description String?
-
   probability String
   impact      String
-
-  mitigation String?
-
-  status String @default("OPEN")
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  mitigation  String?
+  status      String   @default("OPEN")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@index([projectId])
 }
 
 model ProjectIssue {
-  id String @id @default(cuid())
-
-  projectId String
-
+  id          String   @id @default(cuid())
+  projectId   String
   title       String
   description String?
-
-  priority String @default("MEDIUM")
-
-  status String @default("OPEN")
-
-  resolution String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  priority    String   @default("MEDIUM")
+  status      String   @default("OPEN")
+  resolution  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@index([projectId])
 }
 
 model ProjectUpdate {
-  id String @id @default(cuid())
-
-  projectId String
-
-  reportDate DateTime
-
-  progress Float @default(0)
-
+  id           String   @id @default(cuid())
+  projectId    String
+  reportDate   DateTime
+  progress     Float    @default(0)
   achievements String?
   challenges   String?
   nextSteps    String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  project      Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@index([projectId])
 }
 
 model ProjectLocation {
-  id String @id @default(cuid())
-
+  id        String   @id @default(cuid())
   projectId String
-
-  country  String
-  province String
-  district String
-
+  country   String
+  province  String
+  district  String
   createdAt DateTime @default(now())
-
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
 
 model Beneficiary {
-  id String @id @default(cuid())
-
+  id        String   @id @default(cuid())
   projectId String
-
-  gender   String
-  age      Int
-  ageGroup String
-
-  number Int @default(1)
-
+  gender    String
+  age       Int
+  ageGroup  String
+  number    Int      @default(1)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
 
 model Activity {
-  id String @id @default(cuid())
-
-  code String? @unique
-
+  id          String    @id @default(cuid())
+  code        String?   @unique
   title       String
   description String?
-
-  status String @default("PLANNED")
-
-  progress Float @default(0)
-
-  startDate DateTime?
-  endDate   DateTime?
-
-  projectId String
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  status      String    @default("PLANNED")
+  progress    Float     @default(0)
+  startDate   DateTime?
+  endDate     DateTime?
+  projectId   String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
 
 model Indicator {
-  id String @id @default(cuid())
-
-  code String? @unique
-
-  name String @unique
-
-  unit String?
-
-  baseline String?
-  target   String?
-  achieved String?
-
+  id          String    @id @default(cuid())
+  code        String?   @unique
+  name        String    @unique
+  unit        String?
+  baseline    String?
+  target      String?
+  achieved    String?
   programmeId String
   projectId   String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  programme Programme @relation(fields: [programmeId], references: [id], onDelete: Cascade)
-
-  project Project? @relation(fields: [projectId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  programme   Programme @relation(fields: [programmeId], references: [id], onDelete: Cascade)
+  project     Project?  @relation(fields: [projectId], references: [id])
 }
 
 enum ProgrammeStatus {
