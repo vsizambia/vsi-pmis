@@ -12,6 +12,7 @@ import {
   FileText,
   Users,
   Settings,
+  ClipboardCheck,
 } from "lucide-react";
 
 const menu = [
@@ -44,6 +45,11 @@ const menu = [
     name: "Monitoring & Evaluation",
     href: "/m-e",
     icon: BarChart3,
+  },
+  {
+    name: "M&E Intelligence",
+    href: "/monitoring/intelligence",
+    icon: ClipboardCheck,
   },
   {
     name: "Reports",
@@ -104,7 +110,9 @@ export default function Sidebar() {
                 }
               />
 
-              <span>{item.name}</span>
+              <span>
+                {item.name}
+              </span>
             </Link>
           );
         })}
