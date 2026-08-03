@@ -1,8 +1,10 @@
 import prisma from "@/lib/prisma";
 import { formatCurrency } from "@/lib/format";
+import { calculateProjectHealth } from "@/lib/project-health";
 
 import ProjectHeader from "@/components/projects/ProjectHeader";
 import ProjectSummaryCards from "@/components/projects/ProjectSummaryCards";
+import ProjectHealthScore from "@/components/projects/intelligence/ProjectHealthScore";
 import ProjectOverview from "@/components/projects/ProjectOverview";
 import ActivityPerformance from "@/components/projects/ActivityPerformance";
 import IndicatorPerformance from "@/components/projects/IndicatorPerformance";
@@ -63,7 +65,6 @@ export default async function ProjectDetailsPage({
     },
   });
 
-
   if (!project) {
     return (
       <main className="p-8">
@@ -74,14 +75,28 @@ export default async function ProjectDetailsPage({
     );
   }
 
+  const totalBeneficiaries = project.beneficiaries.reduce(
+    (sum, item) => sum + item.number,
+    0
+  );
 
-  const totalBeneficiaries =
-    project.beneficiaries.reduce(
-      (sum, item) =>
-        sum + item.number,
-      0
-    );
+  const openRisks = project.risks.filter(
+    (risk) => risk.status === "OPEN"
+  ).length;
 
+  const openIssues = project.issues.filter(
+    (issue) => issue.status === "OPEN"
+  ).length;
+
+  const health = calculateProjectHealth({
+    progress: project.progress,
+    riskLevel: project.riskLevel,
+    activitiesCount: project.activities.length,
+    indicatorsCount: project.indicators.length,
+    beneficiariesCount: totalBeneficiaries,
+    updatesCount: project.updates.length,
+    issuesCount: openIssues,
+  });
 
   const summary = [
     {
@@ -109,56 +124,43 @@ export default async function ProjectDetailsPage({
     },
     {
       label: "Open Risks",
-      value: project.risks.filter(
-        (risk) =>
-          risk.status === "OPEN"
-      ).length,
+      value: openRisks,
     },
     {
       label: "Open Issues",
-      value: project.issues.filter(
-        (issue) =>
-          issue.status === "OPEN"
-      ).length,
+      value: openIssues,
     },
   ];
 
-
   return (
     <main className="space-y-8 p-8">
+      <ProjectHeader project={project} />
 
-      <ProjectHeader
-        project={project}
+      <ProjectSummaryCards items={summary} />
+
+      <ProjectHealthScore
+        score={health.score}
+        status={health.status}
+        strengths={health.strengths}
+        warnings={health.warnings}
+        recommendations={health.recommendations}
       />
 
-
-      <ProjectSummaryCards
-        items={summary}
-      />
-
-
-      <ProjectOverview
-        project={project}
-      />
-
+      <ProjectOverview project={project} />
 
       <ActivityPerformance
         activities={project.activities}
       />
 
-
       <IndicatorPerformance
         indicators={project.indicators}
       />
-
 
       <BeneficiarySummary
         beneficiaries={project.beneficiaries}
       />
 
-
       <section className="grid gap-6 lg:grid-cols-3">
-
         <MilestoneOverview
           milestones={project.milestones}
         />
@@ -170,14 +172,11 @@ export default async function ProjectDetailsPage({
         <IssueOverview
           issues={project.issues}
         />
-
       </section>
-
 
       <ProjectUpdates
         updates={project.updates}
       />
-
     </main>
   );
 }
