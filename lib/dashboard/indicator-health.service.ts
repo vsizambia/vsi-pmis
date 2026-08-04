@@ -1,8 +1,6 @@
 import prisma from "@/lib/prisma";
 
-
 export interface IndicatorHealth {
-
   totalIndicators: number;
 
   measuredIndicators: number;
@@ -25,22 +23,13 @@ export interface IndicatorHealth {
 function calculateStatus(
   score: number,
 ): IndicatorHealth["status"] {
+  if (score >= 85) return "Excellent";
 
-  if (score >= 85) {
-    return "Excellent";
-  }
+  if (score >= 70) return "Good";
 
-  if (score >= 70) {
-    return "Good";
-  }
+  if (score >= 50) return "Developing";
 
-  if (score >= 50) {
-    return "Developing";
-  }
-
-  if (score >= 30) {
-    return "Needs Attention";
-  }
+  if (score >= 30) return "Needs Attention";
 
   return "Critical";
 }
@@ -52,18 +41,13 @@ function calculateIndicatorScore(
   hasAchievement: boolean,
 ): number {
 
-  /**
-   * Indicator configured but reporting
-   * has not started yet.
-   */
+  // Indicator exists but reporting has not started
   if (!hasAchievement && target > 0) {
     return 50;
   }
 
 
-  /**
-   * No target configured.
-   */
+  // No target configured yet
   if (target === 0) {
     return 50;
   }
@@ -101,9 +85,7 @@ export async function getIndicatorHealth(): Promise<IndicatorHealth> {
 
   const achievementScore =
     totalIndicators === 0
-
       ? 0
-
       : Math.round(
           indicators.reduce(
             (total, indicator) => {
@@ -131,16 +113,13 @@ export async function getIndicatorHealth(): Promise<IndicatorHealth> {
 
             },
             0,
-          ) /
-            totalIndicators,
+          ) / totalIndicators,
         );
 
 
   const reportingRate =
     totalIndicators === 0
-
       ? 0
-
       : Math.round(
           (measuredIndicators.length /
             totalIndicators) *
@@ -149,7 +128,6 @@ export async function getIndicatorHealth(): Promise<IndicatorHealth> {
 
 
   return {
-
     totalIndicators,
 
     measuredIndicators:
@@ -165,6 +143,5 @@ export async function getIndicatorHealth(): Promise<IndicatorHealth> {
       calculateStatus(
         achievementScore,
       ),
-
   };
 }
