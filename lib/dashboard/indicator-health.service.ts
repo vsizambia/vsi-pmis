@@ -37,24 +37,35 @@ function calculateStatus(
 
 function calculateIndicatorScore(
   target: number,
-  achieved: number,
-  hasAchievement: boolean,
+  achieved: string | null,
 ): number {
 
-  // Indicator exists but reporting has not started
-  if (!hasAchievement && target > 0) {
+  /**
+   * Indicator configured but no result reported.
+   * Represents implementation readiness.
+   */
+  if (achieved === null && target > 0) {
     return 50;
   }
 
 
-  // No target configured yet
+  /**
+   * Indicator has no measurable target.
+   */
   if (target === 0) {
     return 50;
   }
 
 
+  const achievedValue =
+    Number(achieved ?? 0);
+
+
+  /**
+   * Actual achievement against target.
+   */
   return Math.min(
-    (achieved / target) * 100,
+    (achievedValue / target) * 100,
     100,
   );
 }
@@ -96,21 +107,13 @@ export async function getIndicatorHealth(): Promise<IndicatorHealth> {
                 );
 
 
-              const achieved =
-                Number(
-                  indicator.achieved ?? 0,
-                );
-
-
               return (
                 total +
                 calculateIndicatorScore(
                   target,
-                  achieved,
-                  indicator.achieved !== null,
+                  indicator.achieved,
                 )
               );
-
             },
             0,
           ) / totalIndicators,
