@@ -5,10 +5,6 @@ import type {
 } from "@/types/dashboard";
 
 import {
-  getIndicatorHealth,
-} from "@/lib/dashboard/indicator-health.service";
-
-import {
   analyseProgrammeHealth,
 } from "@/lib/dashboard/programme-health-intelligence";
 
@@ -57,30 +53,83 @@ function getActivityScore(
 }
 
 
+function calculateProgrammeIndicatorScore(
+  indicators: {
+    target: string | null;
+    achieved: string | null;
+  }[],
+): number {
+
+  if (indicators.length === 0) {
+    return 50;
+  }
+
+
+  const totalScore =
+    indicators.reduce(
+      (total, indicator) => {
+
+        const target =
+          Number(
+            indicator.target ?? 0,
+          );
+
+
+        const achieved =
+          Number(
+            indicator.achieved ?? 0,
+          );
+
+
+        if (target === 0) {
+          return total + 50;
+        }
+
+
+        return (
+          total +
+          Math.min(
+            (achieved / target) * 100,
+            100,
+          )
+        );
+      },
+      0,
+    );
+
+
+  return Math.round(
+    totalScore / indicators.length,
+  );
+}
+
+
 export async function getProgrammeHealth(): Promise<
   ProgrammeHealth[]
 > {
 
-  const [
-    indicatorHealth,
-    programmes,
-  ] = await Promise.all([
-    getIndicatorHealth(),
+  const programmes =
+    await prisma.programme.findMany({
 
-    prisma.programme.findMany({
       include: {
+
         projects: {
+
           include: {
             activities: true,
           },
+
         },
+
+        indicators: true,
+
       },
 
       orderBy: {
         name: "asc",
       },
-    }),
-  ]);
+
+    });
 
 
   return programmes.map((programme) => {
@@ -107,7 +156,8 @@ export async function getProgrammeHealth(): Promise<
                   project.status,
                 ),
               0,
-            ) / projects.length,
+            ) /
+              projects.length,
           );
 
 
@@ -122,18 +172,21 @@ export async function getProgrammeHealth(): Promise<
                   activity.status,
                 ),
               0,
-            ) / activities.length,
+            ) /
+              activities.length,
           );
 
 
     const indicatorScore =
-      indicatorHealth.achievementScore;
+      calculateProgrammeIndicatorScore(
+        programme.indicators,
+      );
 
 
     /**
-     * Temporary intelligence placeholders.
-     * These will connect to Governance
-     * and Finance modules later.
+     * Governance and Finance intelligence
+     * will connect when those modules
+     * are implemented.
      */
     const governanceScore = 50;
 
@@ -151,6 +204,7 @@ export async function getProgrammeHealth(): Promise<
 
 
     return {
+
       id: programme.id,
 
       programmeId: programme.id,
@@ -168,6 +222,8 @@ export async function getProgrammeHealth(): Promise<
       financeScore,
 
       ...intelligence,
+
     };
+
   });
 }
