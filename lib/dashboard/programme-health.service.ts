@@ -4,18 +4,13 @@ import type {
   ProgrammeHealth,
 } from "@/types/dashboard";
 
+import {
+  getIndicatorHealth,
+} from "@/lib/dashboard/indicator-health.service";
 
-function calculateStatus(
-  score: number,
-): ProgrammeHealth["status"] {
-  if (score >= 85) return "Excellent";
-
-  if (score >= 70) return "Good";
-
-  if (score >= 50) return "Fair";
-
-  return "Poor";
-}
+import {
+  analyseProgrammeHealth,
+} from "@/lib/dashboard/programme-health-intelligence";
 
 
 function getProjectScore(
@@ -62,85 +57,30 @@ function getActivityScore(
 }
 
 
-function calculateIndicatorScore(
-  indicators: {
-    target: string | null;
-    achieved: string | null;
-  }[],
-): number {
-
-  if (indicators.length === 0) {
-    return 50;
-  }
-
-
-  const score =
-    indicators.reduce(
-      (total, indicator) => {
-
-        const target =
-          Number(
-            indicator.target ?? 0,
-          );
-
-
-        const achieved =
-          Number(
-            indicator.achieved ?? 0,
-          );
-
-
-        if (target === 0) {
-          return total + 50;
-        }
-
-
-        return (
-          total +
-          Math.min(
-            (achieved / target) * 100,
-            100,
-          )
-        );
-
-      },
-      0,
-    ) / indicators.length;
-
-
-  return Math.round(score);
-}
-
-
 export async function getProgrammeHealth(): Promise<
   ProgrammeHealth[]
 > {
 
-  const programmes =
-    await prisma.programme.findMany({
+  const [
+    indicatorHealth,
+    programmes,
+  ] = await Promise.all([
+    getIndicatorHealth(),
 
+    prisma.programme.findMany({
       include: {
-
         projects: {
-
           include: {
-
             activities: true,
-
           },
-
         },
-
-        indicators: true,
-
       },
-
 
       orderBy: {
         name: "asc",
       },
-
-    });
+    }),
+  ]);
 
 
   return programmes.map((programme) => {
@@ -167,8 +107,7 @@ export async function getProgrammeHealth(): Promise<
                   project.status,
                 ),
               0,
-            ) /
-            projects.length,
+            ) / projects.length,
           );
 
 
@@ -183,43 +122,40 @@ export async function getProgrammeHealth(): Promise<
                   activity.status,
                 ),
               0,
-            ) /
-            activities.length,
+            ) / activities.length,
           );
 
 
     const indicatorScore =
-      calculateIndicatorScore(
-        programme.indicators,
-      );
+      indicatorHealth.achievementScore;
 
 
-    // Future Governance Intelligence integration
+    /**
+     * Temporary intelligence placeholders.
+     * These will connect to Governance
+     * and Finance modules later.
+     */
     const governanceScore = 50;
 
-
-    // Future Finance Intelligence integration
     const financeScore = 50;
 
 
-    const overallScore =
-      Math.round(
-        implementationScore * 0.35 +
-        activityScore * 0.25 +
-        indicatorScore * 0.25 +
-        governanceScore * 0.10 +
-        financeScore * 0.05,
-      );
+    const intelligence =
+      analyseProgrammeHealth({
+        implementationScore,
+        activityScore,
+        indicatorScore,
+        governanceScore,
+        financeScore,
+      });
 
 
     return {
-
       id: programme.id,
 
       programmeId: programme.id,
 
       programmeName: programme.name,
-
 
       implementationScore,
 
@@ -231,46 +167,7 @@ export async function getProgrammeHealth(): Promise<
 
       financeScore,
 
-
-      overallScore,
-
-
-      healthDrivers: [
-
-        {
-          name: "Project Implementation",
-          score: implementationScore,
-        },
-
-        {
-          name: "Activity Completion",
-          score: activityScore,
-        },
-
-        {
-          name: "Indicator Performance",
-          score: indicatorScore,
-        },
-
-        {
-          name: "Governance Readiness",
-          score: governanceScore,
-        },
-
-        {
-          name: "Financial Readiness",
-          score: financeScore,
-        },
-
-      ],
-
-
-      status:
-        calculateStatus(
-          overallScore,
-        ),
-
+      ...intelligence,
     };
-
   });
 }
