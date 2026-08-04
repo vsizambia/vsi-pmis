@@ -2,6 +2,7 @@ import prisma from "@/lib/prisma";
 
 
 export interface IndicatorHealth {
+
   totalIndicators: number;
 
   measuredIndicators: number;
@@ -45,6 +46,36 @@ function calculateStatus(
 }
 
 
+function calculateIndicatorScore(
+  target: number,
+  achieved: number,
+  hasAchievement: boolean,
+): number {
+
+  /**
+   * Indicator configured but reporting
+   * has not started yet.
+   */
+  if (!hasAchievement && target > 0) {
+    return 50;
+  }
+
+
+  /**
+   * No target configured.
+   */
+  if (target === 0) {
+    return 50;
+  }
+
+
+  return Math.min(
+    (achieved / target) * 100,
+    100,
+  );
+}
+
+
 export async function getIndicatorHealth(): Promise<IndicatorHealth> {
 
   const indicators =
@@ -69,10 +100,12 @@ export async function getIndicatorHealth(): Promise<IndicatorHealth> {
 
 
   const achievementScore =
-    measuredIndicators.length === 0
-      ? 50
+    totalIndicators === 0
+
+      ? 0
+
       : Math.round(
-          measuredIndicators.reduce(
+          indicators.reduce(
             (total, indicator) => {
 
               const target =
@@ -87,29 +120,27 @@ export async function getIndicatorHealth(): Promise<IndicatorHealth> {
                 );
 
 
-              if (target === 0) {
-                return total + 50;
-              }
-
-
               return (
                 total +
-                Math.min(
-                  (achieved / target) * 100,
-                  100,
+                calculateIndicatorScore(
+                  target,
+                  achieved,
+                  indicator.achieved !== null,
                 )
               );
 
             },
             0,
           ) /
-            measuredIndicators.length,
+            totalIndicators,
         );
 
 
   const reportingRate =
     totalIndicators === 0
+
       ? 0
+
       : Math.round(
           (measuredIndicators.length /
             totalIndicators) *
