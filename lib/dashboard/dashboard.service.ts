@@ -5,9 +5,12 @@ import type {
   DashboardSummary,
   PortfolioOverview,
   GovernanceSummary,
+  ExecutiveAlert,
 } from "@/types/dashboard";
 
-import { getProgrammeHealth } from "@/lib/dashboard/programme-health.service";
+import {
+  getProgrammeHealth,
+} from "@/lib/dashboard/programme-health.service";
 
 
 /**
@@ -86,7 +89,6 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
     totalBeneficiaries,
 
 
-    // Finance module connection point
     totalBudget: 0,
 
     totalExpenditure: 0,
@@ -94,7 +96,6 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
     budgetUtilisation: 0,
 
 
-    // Governance module connection point
     highRisks: 0,
 
     complianceRate: 0,
@@ -134,6 +135,8 @@ export async function getPortfolioOverview(): Promise<PortfolioOverview> {
 
 /**
  * Governance Summary
+ *
+ * Will connect to Governance Intelligence module.
  */
 export async function getGovernanceSummary(): Promise<GovernanceSummary> {
   return {
@@ -153,15 +156,120 @@ export async function getGovernanceSummary(): Promise<GovernanceSummary> {
 
 
 /**
- * Executive Alerts
+ * Executive Alerts Intelligence
  */
-export async function getExecutiveAlerts() {
-  return [];
+export async function getExecutiveAlerts(): Promise<
+  ExecutiveAlert[]
+> {
+  const alerts: ExecutiveAlert[] = [];
+
+
+  const [
+    suspendedProjects,
+    incompleteActivities,
+    missingIndicators,
+  ] = await Promise.all([
+
+    prisma.project.count({
+      where: {
+        status: "SUSPENDED",
+      },
+    }),
+
+
+    prisma.activity.count({
+      where: {
+        status: {
+          not: "COMPLETED",
+        },
+      },
+    }),
+
+
+    prisma.indicator.count({
+      where: {
+        OR: [
+          {
+            target: null,
+          },
+          {
+            achieved: null,
+          },
+        ],
+      },
+    }),
+
+  ]);
+
+
+  if (suspendedProjects > 0) {
+    alerts.push({
+      id: "suspended-projects",
+
+      severity: "high",
+
+      title:
+        "Suspended projects require attention",
+
+      description:
+        `${suspendedProjects} project(s) are currently suspended and require management review.`,
+
+      createdAt:
+        new Date(),
+
+      resolved: false,
+    });
+  }
+
+
+  if (incompleteActivities > 0) {
+    alerts.push({
+      id: "incomplete-activities",
+
+      severity: "medium",
+
+      title:
+        "Outstanding implementation activities",
+
+      description:
+        `${incompleteActivities} activity record(s) are not yet completed.`,
+
+      createdAt:
+        new Date(),
+
+      resolved: false,
+    });
+  }
+
+
+  if (missingIndicators > 0) {
+    alerts.push({
+      id: "indicator-data-gaps",
+
+      severity: "medium",
+
+      title:
+        "Indicator data gaps detected",
+
+      description:
+        `${missingIndicators} indicator(s) require baseline, target or achievement updates.`,
+
+      createdAt:
+        new Date(),
+
+      resolved: false,
+    });
+  }
+
+
+  return alerts;
 }
 
 
 /**
  * Recent Activity
+ *
+ * Will connect to audit/activity timeline.
  */
 export async function getRecentActivity() {
   return [];
@@ -198,7 +306,6 @@ export async function getDashboardData(): Promise<DashboardData> {
 
 
   return {
-
     summary,
 
     portfolio,
@@ -212,6 +319,5 @@ export async function getDashboardData(): Promise<DashboardData> {
     programmeHealth,
 
     strategicObjectives: [],
-
   };
 }
