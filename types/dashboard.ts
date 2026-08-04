@@ -4,11 +4,7 @@
 // Project: VSI-PMIS
 // ============================================================================
 
-export type TrendDirection =
-  | "up"
-  | "down"
-  | "neutral";
-
+export type TrendDirection = "up" | "down" | "neutral";
 
 export type StatusColor =
   | "primary"
@@ -18,124 +14,83 @@ export type StatusColor =
   | "info"
   | "secondary";
 
-
 export interface DashboardCard {
   title: string;
-
   value: string | number;
-
   subtitle?: string;
-
   icon?: string;
-
   trend?: TrendDirection;
-
   trendValue?: string;
-
   statusColor?: StatusColor;
-
   href?: string;
 }
 
-
 export interface DashboardSummary {
   totalDirectorates: number;
-
   totalProgrammes: number;
-
   totalProjects: number;
-
   activeProjects: number;
-
   completedProjects: number;
-
   suspendedProjects: number;
-
   totalActivities: number;
-
   completedActivities: number;
-
   totalIndicators: number;
-
   totalBeneficiaries: number;
 
-
   totalBudget?: number;
-
   totalExpenditure?: number;
-
   budgetUtilisation?: number;
 
-
   highRisks?: number;
-
   complianceRate?: number;
 }
 
+export interface HealthDriver {
+  name: string;
+  score: number;
+  weight?: number;
+  description?: string;
+}
 
 export interface ProgrammeHealth {
   id: string;
-
   programmeId: string;
-
   programmeName: string;
 
-
   implementationScore: number;
-
   activityScore: number;
-
   indicatorScore: number;
-
   governanceScore: number;
-
   financeScore: number;
-
 
   overallScore: number;
 
+  status: "Excellent" | "Good" | "Fair" | "Poor";
 
-  healthDrivers: {
-    name: string;
+  healthDrivers: HealthDriver[];
 
-    score: number;
-  }[];
+  strengths?: string[];
+  concerns?: string[];
+  recommendations?: string[];
 
-
-  status:
-    | "Excellent"
-    | "Good"
-    | "Fair"
-    | "Poor";
+  lastCalculated?: Date;
 }
-
 
 export interface PortfolioOverview {
   activeProgrammes: number;
-
   activeProjects: number;
-
   completedProjects: number;
-
   totalActivities: number;
-
   completedActivities: number;
-
   beneficiariesReached: number;
 }
-
 
 export interface ExecutiveAlert {
   id: string;
 
-  severity:
-    | "critical"
-    | "high"
-    | "medium"
-    | "low";
+  severity: "critical" | "high" | "medium" | "low";
 
   title: string;
-
   description: string;
 
   createdAt: Date;
@@ -145,14 +100,11 @@ export interface ExecutiveAlert {
   resolved: boolean;
 }
 
-
 export interface RecentActivity {
   id: string;
 
   title: string;
-
   description: string;
-
 
   module:
     | "Programme"
@@ -163,45 +115,32 @@ export interface RecentActivity {
     | "Governance"
     | "Finance";
 
-
   createdAt: Date;
 
   href?: string;
 }
 
-
 export interface StrategicObjectiveProgress {
   id: string;
-
   title: string;
-
   progress: number;
 
-  status:
-    | "On Track"
-    | "Attention"
-    | "Critical";
+  status: "On Track" | "Attention" | "Critical";
 }
-
 
 export interface GovernanceSummary {
   highRisks: number;
-
   mediumRisks: number;
-
   lowRisks: number;
 
   complianceRate: number;
 
   policiesDue: number;
-
   auditsScheduled: number;
 }
 
-
 export interface DashboardData {
   summary: DashboardSummary;
-
   portfolio: PortfolioOverview;
 
   programmeHealth: ProgrammeHealth[];
