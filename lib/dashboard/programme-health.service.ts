@@ -16,6 +16,28 @@ function calculateStatus(
 }
 
 
+function getProjectScore(
+  status: string,
+): number {
+  switch (status) {
+    case "COMPLETED":
+      return 100;
+
+    case "ACTIVE":
+      return 75;
+
+    case "PLANNED":
+      return 25;
+
+    case "SUSPENDED":
+      return 0;
+
+    default:
+      return 0;
+  }
+}
+
+
 export async function getProgrammeHealth(): Promise<
   ProgrammeHealth[]
 > {
@@ -38,6 +60,7 @@ export async function getProgrammeHealth(): Promise<
 
 
   return programmes.map((programme) => {
+
     const projects =
       programme.projects;
 
@@ -49,6 +72,28 @@ export async function getProgrammeHealth(): Promise<
       );
 
 
+    /**
+     * Project implementation score
+     */
+    const implementationScore =
+      projects.length === 0
+        ? 0
+        : Math.round(
+            projects.reduce(
+              (total, project) =>
+                total +
+                getProjectScore(
+                  project.status,
+                ),
+              0,
+            ) /
+              projects.length,
+          );
+
+
+    /**
+     * Activity completion score
+     */
     const completedActivities =
       activities.filter(
         (activity) =>
@@ -66,34 +111,25 @@ export async function getProgrammeHealth(): Promise<
           );
 
 
-    const completedProjects =
-      projects.filter(
-        (project) =>
-          project.status === "COMPLETED",
-      ).length;
-
-
-    const projectScore =
-      projects.length === 0
-        ? 0
-        : Math.round(
-            (completedProjects /
-              projects.length) *
-              100,
-          );
-
-
+    /**
+     * Indicator achievement score
+     */
     const indicatorScore =
       programme.indicators.length === 0
         ? 0
         : Math.round(
             programme.indicators.reduce(
               (total, indicator) => {
+
                 const target =
-                  Number(indicator.target ?? 0);
+                  Number(
+                    indicator.target ?? 0,
+                  );
 
                 const achieved =
-                  Number(indicator.achieved ?? 0);
+                  Number(
+                    indicator.achieved ?? 0,
+                  );
 
 
                 if (target === 0) {
@@ -112,14 +148,11 @@ export async function getProgrammeHealth(): Promise<
           );
 
 
-    /*
-      Temporary placeholders.
-
-      These will later connect to:
-      - Governance Intelligence
-      - Finance Module
-      - Compliance Register
-    */
+    /**
+     * Future integrations:
+     * Governance Intelligence
+     * Finance Module
+     */
     const governanceScore = 100;
 
     const financeScore = 100;
@@ -127,11 +160,11 @@ export async function getProgrammeHealth(): Promise<
 
     const overallScore =
       Math.round(
-        projectScore * 0.30 +
+        implementationScore * 0.35 +
         activityScore * 0.25 +
         indicatorScore * 0.25 +
         governanceScore * 0.10 +
-        financeScore * 0.10,
+        financeScore * 0.05,
       );
 
 
@@ -142,7 +175,7 @@ export async function getProgrammeHealth(): Promise<
 
       programmeName: programme.name,
 
-      implementationScore: projectScore,
+      implementationScore,
 
       financeScore,
 
@@ -152,9 +185,10 @@ export async function getProgrammeHealth(): Promise<
 
       overallScore,
 
-      status: calculateStatus(
-        overallScore,
-      ),
+      status:
+        calculateStatus(
+          overallScore,
+        ),
     };
   });
 }
