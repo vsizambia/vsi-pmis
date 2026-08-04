@@ -60,7 +60,6 @@ export async function getProgrammeHealth(): Promise<
 
 
   return programmes.map((programme) => {
-
     const projects =
       programme.projects;
 
@@ -72,9 +71,6 @@ export async function getProgrammeHealth(): Promise<
       );
 
 
-    /**
-     * Project implementation score
-     */
     const implementationScore =
       projects.length === 0
         ? 0
@@ -91,9 +87,6 @@ export async function getProgrammeHealth(): Promise<
           );
 
 
-    /**
-     * Activity completion score
-     */
     const completedActivities =
       activities.filter(
         (activity) =>
@@ -111,16 +104,12 @@ export async function getProgrammeHealth(): Promise<
           );
 
 
-    /**
-     * Indicator achievement score
-     */
     const indicatorScore =
       programme.indicators.length === 0
-        ? 0
+        ? 50
         : Math.round(
             programme.indicators.reduce(
               (total, indicator) => {
-
                 const target =
                   Number(
                     indicator.target ?? 0,
@@ -133,7 +122,7 @@ export async function getProgrammeHealth(): Promise<
 
 
                 if (target === 0) {
-                  return total;
+                  return total + 50;
                 }
 
 
@@ -148,11 +137,6 @@ export async function getProgrammeHealth(): Promise<
           );
 
 
-    /**
-     * Future integrations:
-     * Governance Intelligence
-     * Finance Module
-     */
     const governanceScore = 100;
 
     const financeScore = 100;
@@ -175,20 +159,52 @@ export async function getProgrammeHealth(): Promise<
 
       programmeName: programme.name,
 
+
       implementationScore,
 
-      financeScore,
+      activityScore,
 
       indicatorScore,
 
       governanceScore,
 
+      financeScore,
+
+
       overallScore,
 
-      status:
-        calculateStatus(
-          overallScore,
-        ),
+
+      healthDrivers: [
+        {
+          name: "Project Implementation",
+          score: implementationScore,
+        },
+
+        {
+          name: "Activity Completion",
+          score: activityScore,
+        },
+
+        {
+          name: "Indicator Performance",
+          score: indicatorScore,
+        },
+
+        {
+          name: "Governance Readiness",
+          score: governanceScore,
+        },
+
+        {
+          name: "Financial Performance",
+          score: financeScore,
+        },
+      ],
+
+
+      status: calculateStatus(
+        overallScore,
+      ),
     };
   });
 }
