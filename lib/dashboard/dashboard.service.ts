@@ -1,0 +1,217 @@
+import prisma from "@/lib/prisma";
+
+import type {
+  DashboardData,
+  DashboardSummary,
+  PortfolioOverview,
+  GovernanceSummary,
+} from "@/types/dashboard";
+
+import { getProgrammeHealth } from "@/lib/dashboard/programme-health.service";
+
+
+/**
+ * Dashboard Summary
+ */
+export async function getDashboardSummary(): Promise<DashboardSummary> {
+  const [
+    totalDirectorates,
+    totalProgrammes,
+    totalProjects,
+    activeProjects,
+    completedProjects,
+    suspendedProjects,
+    totalActivities,
+    completedActivities,
+    totalIndicators,
+    totalBeneficiaries,
+  ] = await Promise.all([
+    prisma.directorate.count(),
+
+    prisma.programme.count(),
+
+    prisma.project.count(),
+
+    prisma.project.count({
+      where: {
+        status: "ACTIVE",
+      },
+    }),
+
+    prisma.project.count({
+      where: {
+        status: "COMPLETED",
+      },
+    }),
+
+    prisma.project.count({
+      where: {
+        status: "SUSPENDED",
+      },
+    }),
+
+    prisma.activity.count(),
+
+    prisma.activity.count({
+      where: {
+        status: "COMPLETED",
+      },
+    }),
+
+    prisma.indicator.count(),
+
+    prisma.beneficiary.count(),
+  ]);
+
+
+  return {
+    totalDirectorates,
+
+    totalProgrammes,
+
+    totalProjects,
+
+    activeProjects,
+
+    completedProjects,
+
+    suspendedProjects,
+
+    totalActivities,
+
+    completedActivities,
+
+    totalIndicators,
+
+    totalBeneficiaries,
+
+
+    // Finance module connection point
+    totalBudget: 0,
+
+    totalExpenditure: 0,
+
+    budgetUtilisation: 0,
+
+
+    // Governance module connection point
+    highRisks: 0,
+
+    complianceRate: 0,
+  };
+}
+
+
+/**
+ * Portfolio Overview
+ */
+export async function getPortfolioOverview(): Promise<PortfolioOverview> {
+  const summary =
+    await getDashboardSummary();
+
+
+  return {
+    activeProgrammes:
+      summary.totalProgrammes,
+
+    activeProjects:
+      summary.activeProjects,
+
+    completedProjects:
+      summary.completedProjects,
+
+    totalActivities:
+      summary.totalActivities,
+
+    completedActivities:
+      summary.completedActivities,
+
+    beneficiariesReached:
+      summary.totalBeneficiaries,
+  };
+}
+
+
+/**
+ * Governance Summary
+ */
+export async function getGovernanceSummary(): Promise<GovernanceSummary> {
+  return {
+    highRisks: 0,
+
+    mediumRisks: 0,
+
+    lowRisks: 0,
+
+    complianceRate: 0,
+
+    policiesDue: 0,
+
+    auditsScheduled: 0,
+  };
+}
+
+
+/**
+ * Executive Alerts
+ */
+export async function getExecutiveAlerts() {
+  return [];
+}
+
+
+/**
+ * Recent Activity
+ */
+export async function getRecentActivity() {
+  return [];
+}
+
+
+/**
+ * Complete VSI Dashboard Data
+ */
+export async function getDashboardData(): Promise<DashboardData> {
+
+  const [
+    summary,
+    portfolio,
+    governance,
+    alerts,
+    recentActivities,
+    programmeHealth,
+  ] = await Promise.all([
+
+    getDashboardSummary(),
+
+    getPortfolioOverview(),
+
+    getGovernanceSummary(),
+
+    getExecutiveAlerts(),
+
+    getRecentActivity(),
+
+    getProgrammeHealth(),
+
+  ]);
+
+
+  return {
+
+    summary,
+
+    portfolio,
+
+    governance,
+
+    alerts,
+
+    recentActivities,
+
+    programmeHealth,
+
+    strategicObjectives: [],
+
+  };
+}
