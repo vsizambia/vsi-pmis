@@ -12,44 +12,28 @@ import {
 function getProjectScore(
   status: string,
 ): number {
-  switch (status) {
-    case "COMPLETED":
-      return 100;
+  const scores: Record<string, number> = {
+    COMPLETED: 100,
+    ACTIVE: 75,
+    PLANNED: 25,
+    SUSPENDED: 0,
+  };
 
-    case "ACTIVE":
-      return 75;
-
-    case "PLANNED":
-      return 25;
-
-    case "SUSPENDED":
-      return 0;
-
-    default:
-      return 0;
-  }
+  return scores[status] ?? 0;
 }
 
 
 function getActivityScore(
   status: string,
 ): number {
-  switch (status) {
-    case "COMPLETED":
-      return 100;
+  const scores: Record<string, number> = {
+    COMPLETED: 100,
+    ACTIVE: 70,
+    PLANNED: 30,
+    SUSPENDED: 0,
+  };
 
-    case "ACTIVE":
-      return 70;
-
-    case "PLANNED":
-      return 30;
-
-    case "SUSPENDED":
-      return 0;
-
-    default:
-      return 0;
-  }
+  return scores[status] ?? 0;
 }
 
 
@@ -86,6 +70,18 @@ function calculateProgrammeIndicatorScore(
         }
 
 
+        /**
+         * Indicator configured but reporting
+         * has not started yet.
+         */
+        if (
+          achieved === 0 &&
+          target > 0
+        ) {
+          return total + 50;
+        }
+
+
         return (
           total +
           Math.min(
@@ -104,6 +100,30 @@ function calculateProgrammeIndicatorScore(
 }
 
 
+function calculateDataConfidence(
+  indicators: {
+    achieved: string | null;
+  }[],
+): number {
+
+  if (indicators.length === 0) {
+    return 0;
+  }
+
+
+  const reported =
+    indicators.filter(
+      (indicator) =>
+        indicator.achieved !== null,
+    ).length;
+
+
+  return Math.round(
+    (reported / indicators.length) * 100,
+  );
+}
+
+
 export async function getProgrammeHealth(): Promise<
   ProgrammeHealth[]
 > {
@@ -114,11 +134,9 @@ export async function getProgrammeHealth(): Promise<
       include: {
 
         projects: {
-
           include: {
             activities: true,
           },
-
         },
 
         indicators: true,
@@ -132,98 +150,108 @@ export async function getProgrammeHealth(): Promise<
     });
 
 
-  return programmes.map((programme) => {
+  return programmes.map(
+    (programme) => {
 
-    const projects =
-      programme.projects;
-
-
-    const activities =
-      projects.flatMap(
-        (project) =>
-          project.activities,
-      );
+      const projects =
+        programme.projects;
 
 
-    const implementationScore =
-      projects.length === 0
-        ? 0
-        : Math.round(
-            projects.reduce(
-              (total, project) =>
-                total +
-                getProjectScore(
-                  project.status,
-                ),
-              0,
-            ) /
-              projects.length,
-          );
+      const activities =
+        projects.flatMap(
+          (project) =>
+            project.activities,
+        );
 
 
-    const activityScore =
-      activities.length === 0
-        ? 0
-        : Math.round(
-            activities.reduce(
-              (total, activity) =>
-                total +
-                getActivityScore(
-                  activity.status,
-                ),
-              0,
-            ) /
-              activities.length,
-          );
+      const implementationScore =
+        projects.length === 0
+          ? 0
+          : Math.round(
+              projects.reduce(
+                (total, project) =>
+                  total +
+                  getProjectScore(
+                    project.status,
+                  ),
+                0,
+              ) /
+                projects.length,
+            );
 
 
-    const indicatorScore =
-      calculateProgrammeIndicatorScore(
-        programme.indicators,
-      );
+      const activityScore =
+        activities.length === 0
+          ? 0
+          : Math.round(
+              activities.reduce(
+                (total, activity) =>
+                  total +
+                  getActivityScore(
+                    activity.status,
+                  ),
+                0,
+              ) /
+                activities.length,
+            );
 
 
-    /**
-     * Governance and Finance intelligence
-     * will connect when those modules
-     * are implemented.
-     */
-    const governanceScore = 50;
-
-    const financeScore = 50;
+      const indicatorScore =
+        calculateProgrammeIndicatorScore(
+          programme.indicators,
+        );
 
 
-    const intelligence =
-      analyseProgrammeHealth({
+      const dataConfidence =
+        calculateDataConfidence(
+          programme.indicators,
+        );
+
+
+      /**
+       * Future connections:
+       * Governance Intelligence
+       * Finance Intelligence
+       */
+      const governanceScore = 50;
+
+      const financeScore = 50;
+
+
+      const intelligence =
+        analyseProgrammeHealth({
+          implementationScore,
+          activityScore,
+          indicatorScore,
+          governanceScore,
+          financeScore,
+        });
+
+
+      return {
+
+        id: programme.id,
+
+        programmeId: programme.id,
+
+        programmeName: programme.name,
+
         implementationScore,
+
         activityScore,
+
         indicatorScore,
+
         governanceScore,
+
         financeScore,
-      });
 
+        dataConfidence,
 
-    return {
+        ...intelligence,
 
-      id: programme.id,
+      };
 
-      programmeId: programme.id,
-
-      programmeName: programme.name,
-
-      implementationScore,
-
-      activityScore,
-
-      indicatorScore,
-
-      governanceScore,
-
-      financeScore,
-
-      ...intelligence,
-
-    };
-
-  });
+    },
+  );
 }
