@@ -38,6 +38,28 @@ function getProjectScore(
 }
 
 
+function getActivityScore(
+  status: string,
+): number {
+  switch (status) {
+    case "COMPLETED":
+      return 100;
+
+    case "ACTIVE":
+      return 70;
+
+    case "PLANNED":
+      return 30;
+
+    case "SUSPENDED":
+      return 0;
+
+    default:
+      return 0;
+  }
+}
+
+
 export async function getProgrammeHealth(): Promise<
   ProgrammeHealth[]
 > {
@@ -60,6 +82,7 @@ export async function getProgrammeHealth(): Promise<
 
 
   return programmes.map((programme) => {
+
     const projects =
       programme.projects;
 
@@ -87,20 +110,19 @@ export async function getProgrammeHealth(): Promise<
           );
 
 
-    const completedActivities =
-      activities.filter(
-        (activity) =>
-          activity.status === "COMPLETED",
-      ).length;
-
-
     const activityScore =
       activities.length === 0
         ? 0
         : Math.round(
-            (completedActivities /
-              activities.length) *
-              100,
+            activities.reduce(
+              (total, activity) =>
+                total +
+                getActivityScore(
+                  activity.status,
+                ),
+              0,
+            ) /
+              activities.length,
           );
 
 
@@ -110,10 +132,12 @@ export async function getProgrammeHealth(): Promise<
         : Math.round(
             programme.indicators.reduce(
               (total, indicator) => {
+
                 const target =
                   Number(
                     indicator.target ?? 0,
                   );
+
 
                 const achieved =
                   Number(
@@ -128,7 +152,10 @@ export async function getProgrammeHealth(): Promise<
 
                 return (
                   total +
-                  (achieved / target) * 100
+                  Math.min(
+                    (achieved / target) * 100,
+                    100,
+                  )
                 );
               },
               0,
@@ -137,9 +164,14 @@ export async function getProgrammeHealth(): Promise<
           );
 
 
-    const governanceScore = 100;
+    /**
+     * Temporary neutral scores.
+     * Connected to Governance Intelligence
+     * and Finance Intelligence modules later.
+     */
+    const governanceScore = 50;
 
-    const financeScore = 100;
+    const financeScore = 50;
 
 
     const overallScore =
@@ -196,15 +228,16 @@ export async function getProgrammeHealth(): Promise<
         },
 
         {
-          name: "Financial Performance",
+          name: "Financial Readiness",
           score: financeScore,
         },
       ],
 
 
-      status: calculateStatus(
-        overallScore,
-      ),
+      status:
+        calculateStatus(
+          overallScore,
+        ),
     };
   });
 }
