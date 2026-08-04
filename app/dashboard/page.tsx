@@ -20,29 +20,28 @@ export default async function DashboardPage() {
     {
       title: "Directorates",
       value: dashboard.summary.totalDirectorates,
-      subtitle: "Organisational units",
+      subtitle: "VSI organisational units",
       statusColor: "primary" as const,
     },
 
     {
       title: "Programmes",
       value: dashboard.summary.totalProgrammes,
-      subtitle: "Active programme portfolio",
+      subtitle: "VSI programme portfolio",
       statusColor: "info" as const,
     },
 
     {
       title: "Projects",
       value: dashboard.summary.totalProjects,
-      subtitle: "Registered projects",
+      subtitle: "Active VSI interventions",
       statusColor: "success" as const,
     },
 
     {
       title: "Beneficiaries",
-      value:
-        dashboard.summary.totalBeneficiaries.toLocaleString(),
-      subtitle: "People reached",
+      value: dashboard.summary.totalBeneficiaries.toLocaleString(),
+      subtitle: "People reached through VSI programmes",
       statusColor: "primary" as const,
     },
 
@@ -56,21 +55,21 @@ export default async function DashboardPage() {
     {
       title: "Indicators",
       value: dashboard.summary.totalIndicators,
-      subtitle: "Monitoring indicators",
+      subtitle: "Programme performance indicators",
       statusColor: "info" as const,
     },
 
     {
       title: "Active Projects",
       value: dashboard.summary.activeProjects,
-      subtitle: "Currently implementing",
+      subtitle: "Projects currently implementing",
       statusColor: "success" as const,
     },
 
     {
       title: "Completed Projects",
       value: dashboard.summary.completedProjects,
-      subtitle: "Successfully completed",
+      subtitle: "Completed VSI projects",
       statusColor: "success" as const,
     },
   ];
@@ -79,7 +78,10 @@ export default async function DashboardPage() {
   return (
     <DashboardLayout>
 
-      <ExecutiveHeader />
+      <ExecutiveHeader
+        title="VSI Executive Dashboard"
+        subtitle="Visionary Students Initiative Programme Management Information System"
+      />
 
 
       <KPIGrid
