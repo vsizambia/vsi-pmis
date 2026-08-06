@@ -4,6 +4,7 @@ import ExecutiveHeader from "@/components/dashboard/layout/ExecutiveHeader";
 import KPIGrid from "@/components/dashboard/cards/KPIGrid";
 
 import PortfolioOverview from "@/components/dashboard/sections/PortfolioOverview";
+import OrganisationHealth from "@/components/dashboard/sections/OrganisationHealth";
 import ProgrammeHealth from "@/components/dashboard/sections/ProgrammeHealth";
 import GovernanceSummary from "@/components/dashboard/sections/GovernanceSummary";
 import ExecutiveAlerts from "@/components/dashboard/sections/ExecutiveAlerts";
@@ -14,7 +15,6 @@ import { getDashboardData } from "@/lib/dashboard/dashboard.service";
 
 export default async function DashboardPage() {
   const dashboard = await getDashboardData();
-
 
   const kpiCards = [
     {
@@ -74,7 +74,6 @@ export default async function DashboardPage() {
     },
   ];
 
-
   return (
     <DashboardLayout>
 
@@ -83,31 +82,27 @@ export default async function DashboardPage() {
         subtitle="Visionary Students Initiative Programme Management Information System"
       />
 
-
-      <KPIGrid
-        cards={kpiCards}
-      />
-
+      <KPIGrid cards={kpiCards} />
 
       <PortfolioOverview
         data={dashboard.portfolio}
       />
 
+      <OrganisationHealth
+        data={dashboard.organisationHealth}
+      />
 
       <ProgrammeHealth
         data={dashboard.programmeHealth}
       />
 
-
       <GovernanceSummary
         data={dashboard.governance}
       />
 
-
       <ExecutiveAlerts
         data={dashboard.alerts}
       />
-
 
       <RecentActivity
         data={dashboard.recentActivities}
