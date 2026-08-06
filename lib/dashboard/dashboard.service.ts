@@ -4,19 +4,19 @@ import type {
   DashboardData,
   DashboardSummary,
   PortfolioOverview,
-  GovernanceSummary,
   ExecutiveAlert,
 } from "@/types/dashboard";
 
-import {
-  getProgrammeHealth,
-} from "@/lib/dashboard/programme-health.service";
+import { getProgrammeHealth } from "@/lib/dashboard/programme-health.service";
+import { getOrganisationHealth } from "@/lib/dashboard/organisation-health.service";
+import { getGovernanceHealth } from "@/lib/governance/governance-health.service";
 
 
 /**
  * Dashboard Summary
  */
 export async function getDashboardSummary(): Promise<DashboardSummary> {
+
   const [
     totalDirectorates,
     totalProgrammes,
@@ -29,6 +29,7 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
     totalIndicators,
     totalBeneficiaries,
   ] = await Promise.all([
+
     prisma.directorate.count(),
 
     prisma.programme.count(),
@@ -64,10 +65,12 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
     prisma.indicator.count(),
 
     prisma.beneficiary.count(),
+
   ]);
 
 
   return {
+
     totalDirectorates,
 
     totalProgrammes,
@@ -99,6 +102,7 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
     highRisks: 0,
 
     complianceRate: 0,
+
   };
 }
 
@@ -107,11 +111,13 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
  * Portfolio Overview
  */
 export async function getPortfolioOverview(): Promise<PortfolioOverview> {
+
   const summary =
     await getDashboardSummary();
 
 
   return {
+
     activeProgrammes:
       summary.totalProgrammes,
 
@@ -129,38 +135,16 @@ export async function getPortfolioOverview(): Promise<PortfolioOverview> {
 
     beneficiariesReached:
       summary.totalBeneficiaries,
+
   };
 }
 
 
 /**
- * Governance Summary
- *
- * Will connect to Governance Intelligence module.
+ * Executive Alerts
  */
-export async function getGovernanceSummary(): Promise<GovernanceSummary> {
-  return {
-    highRisks: 0,
+export async function getExecutiveAlerts(): Promise<ExecutiveAlert[]> {
 
-    mediumRisks: 0,
-
-    lowRisks: 0,
-
-    complianceRate: 0,
-
-    policiesDue: 0,
-
-    auditsScheduled: 0,
-  };
-}
-
-
-/**
- * Executive Alerts Intelligence
- */
-export async function getExecutiveAlerts(): Promise<
-  ExecutiveAlert[]
-> {
   const alerts: ExecutiveAlert[] = [];
 
 
@@ -203,7 +187,9 @@ export async function getExecutiveAlerts(): Promise<
 
 
   if (suspendedProjects > 0) {
+
     alerts.push({
+
       id: "suspended-projects",
 
       severity: "high",
@@ -217,13 +203,18 @@ export async function getExecutiveAlerts(): Promise<
       createdAt:
         new Date(),
 
-      resolved: false,
+      resolved:
+        false,
+
     });
+
   }
 
 
   if (incompleteActivities > 0) {
+
     alerts.push({
+
       id: "incomplete-activities",
 
       severity: "medium",
@@ -237,13 +228,18 @@ export async function getExecutiveAlerts(): Promise<
       createdAt:
         new Date(),
 
-      resolved: false,
+      resolved:
+        false,
+
     });
+
   }
 
 
   if (missingIndicators > 0) {
+
     alerts.push({
+
       id: "indicator-data-gaps",
 
       severity: "medium",
@@ -257,8 +253,11 @@ export async function getExecutiveAlerts(): Promise<
       createdAt:
         new Date(),
 
-      resolved: false,
+      resolved:
+        false,
+
     });
+
   }
 
 
@@ -268,16 +267,16 @@ export async function getExecutiveAlerts(): Promise<
 
 /**
  * Recent Activity
- *
- * Will connect to audit/activity timeline.
  */
 export async function getRecentActivity() {
+
   return [];
+
 }
 
 
 /**
- * Complete VSI Dashboard Data
+ * Complete Executive Dashboard Data
  */
 export async function getDashboardData(): Promise<DashboardData> {
 
@@ -288,13 +287,14 @@ export async function getDashboardData(): Promise<DashboardData> {
     alerts,
     recentActivities,
     programmeHealth,
+    organisationHealth,
   ] = await Promise.all([
 
     getDashboardSummary(),
 
     getPortfolioOverview(),
 
-    getGovernanceSummary(),
+    getGovernanceHealth(),
 
     getExecutiveAlerts(),
 
@@ -302,10 +302,13 @@ export async function getDashboardData(): Promise<DashboardData> {
 
     getProgrammeHealth(),
 
+    getOrganisationHealth(),
+
   ]);
 
 
   return {
+
     summary,
 
     portfolio,
@@ -318,6 +321,10 @@ export async function getDashboardData(): Promise<DashboardData> {
 
     programmeHealth,
 
+    organisationHealth,
+
     strategicObjectives: [],
+
   };
+
 }
