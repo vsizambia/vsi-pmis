@@ -4,7 +4,6 @@
 // Project: VSI-PMIS
 // ============================================================================
 
-
 export type TrendDirection =
   | "up"
   | "down"
@@ -26,15 +25,12 @@ export type StatusColor =
 
 export interface DashboardCard {
   title: string;
-
   value: string | number;
 
   subtitle?: string;
-
   icon?: string;
 
   trend?: TrendDirection;
-
   trendValue?: string;
 
   statusColor?: StatusColor;
@@ -49,35 +45,25 @@ export interface DashboardCard {
 
 export interface DashboardSummary {
   totalDirectorates: number;
-
   totalProgrammes: number;
-
   totalProjects: number;
 
   activeProjects: number;
-
   completedProjects: number;
-
   suspendedProjects: number;
 
   totalActivities: number;
-
   completedActivities: number;
 
   totalIndicators: number;
 
   totalBeneficiaries: number;
 
-
   totalBudget?: number;
-
   totalExpenditure?: number;
-
   budgetUtilisation?: number;
 
-
   highRisks?: number;
-
   complianceRate?: number;
 }
 
@@ -128,9 +114,6 @@ export interface ProgrammeHealth {
   financeScore: number;
 
 
-  /**
-   * Reliability of available programme evidence.
-   */
   dataConfidence: number;
 
 
@@ -151,6 +134,44 @@ export interface ProgrammeHealth {
 
 
   lastCalculated?: Date;
+}
+
+
+// ============================================================================
+// Organisation Health Intelligence
+// ============================================================================
+
+export interface OrganisationHealth {
+
+  overallScore: number;
+
+
+  status:
+    | "Excellent"
+    | "Healthy"
+    | "Needs Attention"
+    | "At Risk"
+    | "Critical";
+
+
+  programmeScore: number;
+
+  projectScore: number;
+
+  activityScore: number;
+
+  indicatorScore: number;
+
+  governanceScore: number;
+
+  financeScore: number;
+
+
+  strengths: string[];
+
+  concerns: string[];
+
+  recommendations: string[];
 }
 
 
@@ -289,6 +310,9 @@ export interface DashboardData {
 
 
   programmeHealth: ProgrammeHealth[];
+
+
+  organisationHealth: OrganisationHealth;
 
 
   governance: GovernanceSummary;
