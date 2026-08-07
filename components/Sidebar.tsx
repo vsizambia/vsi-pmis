@@ -9,27 +9,20 @@ export default function Sidebar() {
   const pathname = usePathname();
 
 
-  const menuClass = (path: string) => {
-
-    const active = pathname === path;
-
-    return `
+  const menuClass = (path: string) =>
+    `
       block rounded-lg px-4 py-3 transition
       ${
-        active
+        pathname === path
           ? "bg-[#003566] text-[#ffc300] font-semibold"
           : "hover:bg-[#001d3d] text-white"
       }
     `;
 
-  };
-
 
   return (
     <aside className="w-72 min-h-screen bg-[#000814] text-white flex flex-col">
 
-
-      {/* Identity */}
       <div className="p-6 border-b border-[#003566]">
 
         <h1 className="text-2xl font-bold text-[#ffc300]">
@@ -43,17 +36,21 @@ export default function Sidebar() {
       </div>
 
 
-
-      {/* Navigation */}
-
       <nav className="p-4 space-y-2 flex-1">
-
 
         <Link
           href="/"
           className={menuClass("/")}
         >
           Executive Dashboard
+        </Link>
+
+
+        <Link
+          href="/executive"
+          className={menuClass("/executive")}
+        >
+          Executive Command Centre
         </Link>
 
 
@@ -87,14 +84,12 @@ export default function Sidebar() {
         </Link>
 
 
-
         <Link
           href="/monitoring"
           className={menuClass("/monitoring")}
         >
           Monitoring, Evaluation & Learning
         </Link>
-
 
 
         <Link
@@ -105,14 +100,12 @@ export default function Sidebar() {
         </Link>
 
 
-
         <Link
           href="/volunteers"
           className={menuClass("/volunteers")}
         >
           Volunteer Management
         </Link>
-
 
 
 
@@ -129,7 +122,6 @@ export default function Sidebar() {
         </Link>
 
 
-
         <Link
           href="/documents"
           className={menuClass("/documents")}
@@ -139,11 +131,9 @@ export default function Sidebar() {
 
 
 
-
         <p className="px-4 pt-5 pb-2 text-xs uppercase text-[#ffc300]">
           System
         </p>
-
 
 
         <Link
@@ -157,8 +147,6 @@ export default function Sidebar() {
       </nav>
 
 
-
-      {/* Footer */}
 
       <div className="p-4 border-t border-[#003566]">
 
