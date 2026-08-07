@@ -145,13 +145,21 @@ export interface OrganisationHealth {
 
   overallScore: number;
 
-
   status:
     | "Excellent"
     | "Healthy"
     | "Needs Attention"
     | "At Risk"
     | "Critical";
+
+
+  healthScore: number;
+
+  operationalReadiness: number;
+
+  governanceReadiness: number;
+
+  dataConfidence: number;
 
 
   programmeScore: number;
