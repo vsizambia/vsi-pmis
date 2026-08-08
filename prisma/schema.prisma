@@ -98,6 +98,7 @@ model Project {
   risks            ProjectRisk[]
   issues           ProjectIssue[]
   updates          ProjectUpdate[]
+  expenditures     ProjectExpenditure[]
 }
 
 model ProjectMilestone {
@@ -243,4 +244,26 @@ enum RiskLevel {
   MEDIUM
   HIGH
   CRITICAL
+}
+
+
+model ProjectExpenditure {
+  id             String   @id @default(cuid())
+  projectId      String
+  transactionDate DateTime
+  amount         Float
+  category       String
+  description    String
+  reference      String?
+  fundingSource  String?
+  status         String   @default("RECORDED")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  project        Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([transactionDate])
+  @@index([category])
+  @@index([status])
 }
