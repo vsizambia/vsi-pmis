@@ -3,23 +3,59 @@ import prisma from "@/lib/prisma";
 import ProjectForm from "./ProjectForm";
 
 export default async function NewProjectPage() {
-  const programmes = await prisma.programme.findMany({
-    orderBy: {
-      name: "asc",
-    },
-  });
+  const [programmes, users] = await Promise.all([
+    prisma.programme.findMany({
+      where: {
+        status: "ACTIVE",
+      },
+      orderBy: {
+        name: "asc",
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+    }),
+
+    prisma.user.findMany({
+      where: {
+        isActive: true,
+      },
+      orderBy: {
+        name: "asc",
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+      },
+    }),
+  ]);
 
   return (
-    <main className="p-8 max-w-3xl">
-      <h1 className="text-3xl font-bold mb-6">
-        Create New Project
-      </h1>
+    <main className="mx-auto max-w-6xl p-6">
+      <div className="mb-8">
+        <p className="text-sm font-medium text-green-700">
+          VSI-PMIS / Projects
+        </p>
 
-      <ProjectForm programmes={programmes} />
+        <h1 className="mt-1 text-3xl font-bold">
+          Register New Project
+        </h1>
+
+        <p className="mt-2 text-gray-600">
+          Capture the official master data for a VSI project.
+        </p>
+      </div>
+
+      <ProjectForm
+        programmes={programmes}
+        users={users}
+      />
 
       <Link
         href="/projects"
-        className="block mt-6 text-blue-600"
+        className="mt-6 inline-block text-blue-600 hover:underline"
       >
         ← Back to Projects
       </Link>
