@@ -16,6 +16,7 @@ export default function RegisterDirectorate() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        code: form.get("code"),
         name: form.get("name"),
         description: form.get("description"),
       }),
@@ -23,24 +24,39 @@ export default function RegisterDirectorate() {
 
     if (response.ok) {
       setMessage("Directorate created successfully.");
-
       e.currentTarget.reset();
     } else {
-      setMessage("Failed to create directorate.");
+      const data = await response.json().catch(() => null);
+      setMessage(data?.message || "Failed to create directorate.");
     }
   }
 
   return (
-    <div className="p-8 max-w-xl">
-
+    <div className="max-w-2xl">
       <h1 className="text-3xl font-bold mb-6 text-vsi-navy">
         Register Directorate
       </h1>
 
       <form
         onSubmit={submit}
-        className="space-y-4 bg-white rounded-xl shadow p-6"
+        className="space-y-5 bg-white rounded-xl shadow p-6"
       >
+        <div>
+          <label className="block mb-2 font-medium">
+            Directorate Code
+          </label>
+
+          <input
+            name="code"
+            required
+            placeholder="e.g. PROGRAMMES"
+            className="border rounded-lg p-3 w-full"
+          />
+
+          <p className="text-sm text-gray-500 mt-1">
+            Use a short unique institutional code.
+          </p>
+        </div>
 
         <div>
           <label className="block mb-2 font-medium">
@@ -55,7 +71,6 @@ export default function RegisterDirectorate() {
           />
         </div>
 
-
         <div>
           <label className="block mb-2 font-medium">
             Description
@@ -64,11 +79,10 @@ export default function RegisterDirectorate() {
           <textarea
             name="description"
             rows={4}
-            placeholder="Enter description"
+            placeholder="Enter directorate mandate or description"
             className="border rounded-lg p-3 w-full"
           />
         </div>
-
 
         <button
           type="submit"
@@ -76,16 +90,13 @@ export default function RegisterDirectorate() {
         >
           Save Directorate
         </button>
-
       </form>
-
 
       {message && (
         <p className="mt-4 text-green-700 font-medium">
           {message}
         </p>
       )}
-
     </div>
   );
 }
