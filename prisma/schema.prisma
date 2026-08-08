@@ -78,6 +78,7 @@ model Project {
   riskLevel        RiskLevel          @default(LOW)
   progress         Float              @default(0)
   budget           Float?
+  spent            Float              @default(0)
   currency         String             @default("ZMW")
   fundingSource    String?
   donor            String?

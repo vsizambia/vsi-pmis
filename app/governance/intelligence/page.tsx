@@ -61,35 +61,6 @@ interface AuditItem {
 }
 
 
-interface ComplianceIndexItem {
-  name: string;
-  score: number;
-  controls: number;
-  passed: number;
-}
-
-
-interface ManagementAction {
-  id: string;
-  title: string;
-  owner: string;
-  progress: number;
-  priority: string;
-}
-
-
-interface GovernanceFeedItem {
-  id: string;
-  message: string;
-  timestamp: string;
-  type:
-    | "RISK"
-    | "AUDIT"
-    | "ACTIVITY"
-    | "SYSTEM";
-}
-
-
 
 function calculateRiskScore(
   probability: string,

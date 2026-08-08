@@ -25,6 +25,49 @@ export interface RiskIntelligence {
   risks: RiskItem[];
 }
 
+function normaliseRiskLevel(value: string | null | undefined): RiskLevel {
+  switch ((value ?? "").toUpperCase()) {
+    case "CRITICAL":
+      return "Critical";
+    case "HIGH":
+      return "High";
+    case "MEDIUM":
+      return "Medium";
+    default:
+      return "Low";
+  }
+}
+
+function probabilityScore(value: string | null | undefined): number {
+  switch ((value ?? "").toUpperCase()) {
+    case "CRITICAL":
+      return 100;
+    case "HIGH":
+      return 75;
+    case "MEDIUM":
+      return 50;
+    case "LOW":
+      return 25;
+    default:
+      return 0;
+  }
+}
+
+function impactScore(value: string | null | undefined): number {
+  switch ((value ?? "").toUpperCase()) {
+    case "CRITICAL":
+      return 100;
+    case "HIGH":
+      return 75;
+    case "MEDIUM":
+      return 50;
+    case "LOW":
+      return 25;
+    default:
+      return 0;
+  }
+}
+
 function classifyRisk(score: number): RiskLevel {
   if (score >= 75) return "Critical";
   if (score >= 50) return "High";
@@ -32,10 +75,27 @@ function classifyRisk(score: number): RiskLevel {
   return "Low";
 }
 
+function recommendation(level: RiskLevel): string {
+  switch (level) {
+    case "Critical":
+      return "Executive intervention required.";
+
+    case "High":
+      return "Immediate management review required.";
+
+    case "Medium":
+      return "Increase implementation oversight.";
+
+    default:
+      return "Continue monitoring.";
+  }
+}
+
 export async function getRiskIntelligence(): Promise<RiskIntelligence> {
   const projects = await prisma.project.findMany({
     include: {
-      activities: true,
+      risks: true,
+      issues: true,
     },
   });
 
@@ -48,24 +108,51 @@ export async function getRiskIntelligence(): Promise<RiskIntelligence> {
   let lowRiskProjects = 0;
 
   for (const project of projects) {
-    let score = 0;
+    const projectRiskScore =
+      normaliseRiskLevel(project.riskLevel) === "Critical"
+        ? 100
+        : normaliseRiskLevel(project.riskLevel) === "High"
+          ? 75
+          : normaliseRiskLevel(project.riskLevel) === "Medium"
+            ? 50
+            : 25;
 
-    if (project.status === "SUSPENDED") {
-      score += 80;
-    } else if (project.status === "PLANNED") {
-      score += 40;
-    } else if (project.status === "ACTIVE") {
-      score += 20;
-    }
+    const openRisks = project.risks.filter(
+      (risk) => risk.status.toUpperCase() !== "CLOSED",
+    );
 
-    const incompleteActivities =
-      project.activities.filter(
-        (activity) => activity.status !== "COMPLETED",
-      ).length;
+    const recordedRiskScores = openRisks.map((risk) => {
+      const probability = probabilityScore(risk.probability);
+      const impact = impactScore(risk.impact);
 
-    score += Math.min(incompleteActivities * 5, 20);
+      return Math.round((probability + impact) / 2);
+    });
 
-    score = Math.min(score, 100);
+    const recordedRiskScore =
+      recordedRiskScores.length > 0
+        ? Math.max(...recordedRiskScores)
+        : 0;
+
+    const openHighPriorityIssues = project.issues.filter(
+      (issue) =>
+        issue.status.toUpperCase() !== "CLOSED" &&
+        ["HIGH", "CRITICAL"].includes(
+          issue.priority.toUpperCase(),
+        ),
+    ).length;
+
+    const issuePenalty = Math.min(
+      openHighPriorityIssues * 10,
+      20,
+    );
+
+    const score = Math.min(
+      Math.max(
+        projectRiskScore,
+        recordedRiskScore,
+      ) + issuePenalty,
+      100,
+    );
 
     const level = classifyRisk(score);
 
@@ -84,14 +171,7 @@ export async function getRiskIntelligence(): Promise<RiskIntelligence> {
       name: project.name,
       score,
       level,
-      recommendation:
-        level === "Low"
-          ? "Continue monitoring."
-          : level === "Medium"
-          ? "Increase implementation oversight."
-          : level === "High"
-          ? "Immediate management review required."
-          : "Executive intervention required.",
+      recommendation: recommendation(level),
     });
   }
 
@@ -102,15 +182,10 @@ export async function getRiskIntelligence(): Promise<RiskIntelligence> {
 
   return {
     overallRiskScore,
-
     portfolioRisk: classifyRisk(overallRiskScore),
-
     highRiskProjects,
-
     mediumRiskProjects,
-
     lowRiskProjects,
-
     risks,
   };
 }

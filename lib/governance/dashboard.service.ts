@@ -2,79 +2,128 @@ import prisma from "@/lib/prisma";
 
 export interface GovernanceDashboard {
   governanceScore: number;
-
   complianceRate: number;
-
   highRisks: number;
-
   mediumRisks: number;
-
   lowRisks: number;
-
   pendingAudits: number;
-
   policiesDue: number;
-
   activeAlerts: number;
 }
 
 export async function getGovernanceDashboard(): Promise<GovernanceDashboard> {
-
   const [
-    suspendedProjects,
-    totalProjects,
-    incompleteActivities,
-    indicators,
+    projects,
+    projectRisks,
+    projectIssues,
   ] = await Promise.all([
-    prisma.project.count({
-      where: {
-        status: "SUSPENDED",
+    prisma.project.findMany({
+      select: {
+        status: true,
+        riskLevel: true,
       },
     }),
 
-    prisma.project.count(),
-
-    prisma.activity.count({
-      where: {
-        status: {
-          not: "COMPLETED",
-        },
+    prisma.projectRisk.findMany({
+      select: {
+        status: true,
+        probability: true,
+        impact: true,
       },
     }),
 
-    prisma.indicator.findMany(),
+    prisma.projectIssue.findMany({
+      select: {
+        status: true,
+        priority: true,
+      },
+    }),
   ]);
+
+  const totalProjects = projects.length;
+
+  const suspendedProjects = projects.filter(
+    (project) => project.status === "SUSPENDED",
+  ).length;
+
+  const cancelledProjects = projects.filter(
+    (project) => project.status === "CANCELLED",
+  ).length;
 
   const complianceRate =
     totalProjects === 0
       ? 100
       : Math.round(
-          ((totalProjects - suspendedProjects) /
+          ((totalProjects -
+            suspendedProjects -
+            cancelledProjects) /
             totalProjects) *
             100,
         );
 
-  const governanceScore = Math.round(
-    complianceRate * 0.6 +
-      (100 - incompleteActivities) * 0.2 +
-      60 * 0.2,
-  );
-
-  const highRisks = suspendedProjects;
+  const highRisks =
+    projects.filter(
+      (project) =>
+        project.riskLevel === "HIGH" ||
+        project.riskLevel === "CRITICAL",
+    ).length;
 
   const mediumRisks =
-    incompleteActivities;
+    projects.filter(
+      (project) => project.riskLevel === "MEDIUM",
+    ).length;
 
   const lowRisks =
-    Math.max(
-      indicators.length -
-        highRisks -
-        mediumRisks,
-      0,
-    );
+    projects.filter(
+      (project) => project.riskLevel === "LOW",
+    ).length;
+
+  const openRisks = projectRisks.filter(
+    (risk) => risk.status !== "CLOSED",
+  );
+
+  const openIssues = projectIssues.filter(
+    (issue) => issue.status !== "CLOSED",
+  );
+
+  const criticalRiskItems = openRisks.filter(
+    (risk) =>
+      risk.impact === "CRITICAL" ||
+      risk.probability === "HIGH" &&
+        risk.impact === "HIGH",
+  ).length;
+
+  const highPriorityIssues = openIssues.filter(
+    (issue) =>
+      issue.priority === "HIGH" ||
+      issue.priority === "CRITICAL",
+  ).length;
+
+  /*
+   * Governance score reflects:
+   * - project compliance
+   * - portfolio risk exposure
+   * - unresolved risks/issues
+   *
+   * It does not treat incomplete activities as governance failures.
+   */
+  let governanceScore = complianceRate;
+
+  governanceScore -= Math.min(highRisks * 5, 20);
+  governanceScore -= Math.min(criticalRiskItems * 5, 15);
+  governanceScore -= Math.min(highPriorityIssues * 3, 10);
+
+  governanceScore = Math.max(
+    0,
+    Math.min(100, governanceScore),
+  );
+
+  const activeAlerts =
+    openRisks.length +
+    openIssues.length;
 
   return {
-    governanceScore,
+    governanceScore: Math.round(governanceScore),
 
     complianceRate,
 
@@ -88,7 +137,6 @@ export async function getGovernanceDashboard(): Promise<GovernanceDashboard> {
 
     policiesDue: 0,
 
-    activeAlerts:
-      highRisks + mediumRisks,
+    activeAlerts,
   };
 }

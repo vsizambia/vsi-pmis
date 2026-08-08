@@ -32,7 +32,7 @@ export default function ExecutiveScoreCard({ data }: Props) {
 
       <p className="mt-4 text-sm text-gray-300">
         Combined assessment of organisational performance,
-        governance compliance and financial utilisation.
+        governance, financial position and risk exposure.
       </p>
     </div>
   );

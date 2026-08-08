@@ -1,43 +1,23 @@
 import ExecutiveHeader from "@/components/dashboard/layout/ExecutiveHeader";
 import DashboardLayout from "@/components/dashboard/layout/DashboardLayout";
 
+import ExecutiveScoreCard from "@/components/executive/cards/ExecutiveScoreCard";
+import GovernancePosition from "@/components/executive/sections/GovernancePosition";
+import FinancialPosition from "@/components/executive/sections/FinancialPosition";
+import RiskExposure from "@/components/executive/sections/RiskExposure";
+import ProgrammePerformance from "@/components/executive/sections/ProgrammePerformance";
+import ExecutiveActions from "@/components/executive/sections/ExecutiveActions";
+
 import { getExecutiveIntelligence } from "@/lib/intelligence/executive-intelligence.service";
-
-
-function scoreStatus(status: string) {
-  switch (status) {
-    case "Excellent":
-      return "Excellent performance";
-    case "Healthy":
-      return "Stable and controlled";
-    case "Needs Attention":
-      return "Management attention required";
-    case "At Risk":
-      return "Corrective action required";
-    default:
-      return "Critical intervention required";
-  }
-}
 
 
 export default async function ExecutivePage() {
 
-  const intelligence =
+  const executive =
     await getExecutiveIntelligence();
 
 
-  const {
-    executiveScore,
-    organisationStatus,
-    dashboard,
-    governance,
-    finance,
-    risk,
-  } = intelligence;
-
-
   return (
-
     <DashboardLayout>
 
       <ExecutiveHeader
@@ -46,160 +26,46 @@ export default async function ExecutivePage() {
       />
 
 
-      <div className="grid gap-6 md:grid-cols-4">
+      <div className="mt-6 space-y-6">
 
 
-        <div className="rounded-xl border p-6">
-
-          <p className="text-sm text-gray-500">
-            Executive Score
-          </p>
-
-          <h2 className="mt-2 text-4xl font-bold">
-            {executiveScore}%
-          </h2>
-
-          <p className="mt-2 text-sm">
-            {organisationStatus}
-          </p>
-
-        </div>
+        <ExecutiveScoreCard
+          data={executive}
+        />
 
 
+        <div className="grid gap-6 md:grid-cols-2">
 
-        <div className="rounded-xl border p-6">
+          <GovernancePosition
+            data={executive}
+          />
 
-          <p className="text-sm text-gray-500">
-            Organisation Health
-          </p>
 
-          <h2 className="mt-2 text-3xl font-bold">
-            {dashboard.organisationHealth.overallScore}%
-          </h2>
+          <FinancialPosition
+            data={executive}
+          />
 
-          <p className="mt-2 text-sm">
-            {scoreStatus(
-              dashboard.organisationHealth.status,
-            )}
-          </p>
+
+          <RiskExposure
+            data={executive}
+          />
+
+
+          <ProgrammePerformance
+            data={executive}
+          />
 
         </div>
 
 
-
-        <div className="rounded-xl border p-6">
-
-          <p className="text-sm text-gray-500">
-            Governance Compliance
-          </p>
-
-          <h2 className="mt-2 text-3xl font-bold">
-            {governance.complianceRate}%
-          </h2>
-
-        </div>
-
-
-
-        <div className="rounded-xl border p-6">
-
-          <p className="text-sm text-gray-500">
-            Portfolio Risk
-          </p>
-
-          <h2 className="mt-2 text-3xl font-bold">
-            {risk.portfolioRisk}
-          </h2>
-
-          <p className="mt-2 text-sm">
-            {risk.highRiskProjects} high-risk projects
-          </p>
-
-        </div>
-
-
-      </div>
-
-
-
-      <div className="mt-8 grid gap-6 md:grid-cols-3">
-
-
-        <div className="rounded-xl border p-6">
-
-          <h3 className="font-semibold">
-            Financial Intelligence
-          </h3>
-
-          <p className="mt-3">
-            Budget:
-            {" "}
-            ZMW {finance.totalBudget.toLocaleString()}
-          </p>
-
-          <p>
-            Utilisation:
-            {" "}
-            {finance.utilisationRate}%
-          </p>
-
-        </div>
-
-
-
-        <div className="rounded-xl border p-6">
-
-          <h3 className="font-semibold">
-            Risk Profile
-          </h3>
-
-          <p className="mt-3">
-            Critical / High:
-            {" "}
-            {risk.highRiskProjects}
-          </p>
-
-          <p>
-            Medium:
-            {" "}
-            {risk.mediumRiskProjects}
-          </p>
-
-          <p>
-            Low:
-            {" "}
-            {risk.lowRiskProjects}
-          </p>
-
-        </div>
-
-
-
-        <div className="rounded-xl border p-6">
-
-          <h3 className="font-semibold">
-            Programme Intelligence
-          </h3>
-
-          <p className="mt-3">
-            Active Programmes:
-            {" "}
-            {dashboard.portfolio.activeProgrammes}
-          </p>
-
-          <p>
-            Active Projects:
-            {" "}
-            {dashboard.portfolio.activeProjects}
-          </p>
-
-        </div>
+        <ExecutiveActions
+          data={executive}
+        />
 
 
       </div>
 
 
     </DashboardLayout>
-
   );
 }
